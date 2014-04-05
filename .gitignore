@@ -1,3 +1,22 @@
+#############
+## project specific
+#############
+.ipynb_checkpoints/
+
+
+#############
+## PyCharm
+#############
+.idea/
+
+
+#############
+## Spyder
+#############
+
+.spyderworkspace
+.spyderproject
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

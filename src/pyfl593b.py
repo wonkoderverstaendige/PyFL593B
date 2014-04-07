@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 """
 Created on 4/5/14 3:31 AM 2013
-@author: <'reichler'> ronny.eichler@gmail.com
+@author: <'Ronny Eichler'> ronny.eichler@gmail.com
 
 GUI controlling PyFL593B interface instance
 """
 
 __version__ = '0.0.1'
-__author__ = 'Ronny Eichler'
 
+import sys
+if sys.hexversion > 0x03000000:
+    raise EnvironmentError('Python 3 not supported.')
 
-from core import constants as flc
-from core import fl593b
+from core.fl593b import FL593B
 import ui
 
-dev = fl593b.FL593B()
+dev = FL593B()

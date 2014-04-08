@@ -1,0 +1,150 @@
+# -*- coding: utf-8 -*-
+
+# Form implementation generated from reading ui file 'MainWindowUi.ui'
+#
+# Created: Tue Apr  8 16:18:26 2014
+#      by: PyQt4 UI code generator 4.10.4
+#
+# WARNING! All changes made in this file will be lost!
+
+from PyQt4 import QtCore, QtGui
+
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName(_fromUtf8("MainWindow"))
+        MainWindow.resize(640, 480)
+        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.gridLayout = QtGui.QGridLayout(self.centralwidget)
+        self.gridLayout.setObjectName(_fromUtf8("gridLayout"))
+        self.groupBox_2 = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
+        self.horizontalLayout_2 = QtGui.QHBoxLayout(self.groupBox_2)
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.gridLayout_3 = QtGui.QGridLayout()
+        self.gridLayout_3.setObjectName(_fromUtf8("gridLayout_3"))
+        self.horizontalLayout_2.addLayout(self.gridLayout_3)
+        self.gridLayout.addWidget(self.groupBox_2, 0, 1, 1, 1)
+        self.groupBox = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox)
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.gridLayout_2 = QtGui.QGridLayout()
+        self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
+        self.label_3 = QtGui.QLabel(self.groupBox)
+        self.label_3.setObjectName(_fromUtf8("label_3"))
+        self.gridLayout_2.addWidget(self.label_3, 1, 1, 1, 1)
+        self.pb_imon1 = QtGui.QProgressBar(self.groupBox)
+        self.pb_imon1.setProperty("value", 24)
+        self.pb_imon1.setTextVisible(False)
+        self.pb_imon1.setOrientation(QtCore.Qt.Vertical)
+        self.pb_imon1.setObjectName(_fromUtf8("pb_imon1"))
+        self.gridLayout_2.addWidget(self.pb_imon1, 0, 2, 1, 1)
+        self.label_4 = QtGui.QLabel(self.groupBox)
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.gridLayout_2.addWidget(self.label_4, 1, 2, 1, 1)
+        self.slider_Imax1 = QtGui.QSlider(self.groupBox)
+        self.slider_Imax1.setOrientation(QtCore.Qt.Vertical)
+        self.slider_Imax1.setObjectName(_fromUtf8("slider_Imax1"))
+        self.gridLayout_2.addWidget(self.slider_Imax1, 0, 1, 1, 1)
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.groupBox_4 = QtGui.QGroupBox(self.groupBox)
+        self.groupBox_4.setObjectName(_fromUtf8("groupBox_4"))
+        self.gridLayout_5 = QtGui.QGridLayout(self.groupBox_4)
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.radio_CP = QtGui.QRadioButton(self.groupBox_4)
+        self.radio_CP.setObjectName(_fromUtf8("radio_CP"))
+        self.gridLayout_5.addWidget(self.radio_CP, 0, 0, 1, 1)
+        self.radio_CC = QtGui.QRadioButton(self.groupBox_4)
+        self.radio_CC.setObjectName(_fromUtf8("radio_CC"))
+        self.gridLayout_5.addWidget(self.radio_CC, 1, 0, 1, 1)
+        self.verticalLayout.addWidget(self.groupBox_4)
+        self.gridLayout_2.addLayout(self.verticalLayout, 0, 0, 1, 1)
+        self.horizontalLayout.addLayout(self.gridLayout_2)
+        self.gridLayout.addWidget(self.groupBox, 0, 0, 1, 1)
+        self.groupBox_3 = QtGui.QGroupBox(self.centralwidget)
+        self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
+        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.groupBox_3)
+        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
+        self.gridLayout_4 = QtGui.QGridLayout()
+        self.gridLayout_4.setObjectName(_fromUtf8("gridLayout_4"))
+        self.push_REN = QtGui.QPushButton(self.groupBox_3)
+        self.push_REN.setCheckable(True)
+        self.push_REN.setObjectName(_fromUtf8("push_REN"))
+        self.gridLayout_4.addWidget(self.push_REN, 0, 4, 1, 1)
+        self.label = QtGui.QLabel(self.groupBox_3)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout_4.addWidget(self.label, 0, 0, 1, 1)
+        self.lbl_fw_ver = QtGui.QLabel(self.groupBox_3)
+        self.lbl_fw_ver.setObjectName(_fromUtf8("lbl_fw_ver"))
+        self.gridLayout_4.addWidget(self.lbl_fw_ver, 1, 1, 1, 1)
+        self.lbl_dev_name = QtGui.QLabel(self.groupBox_3)
+        self.lbl_dev_name.setObjectName(_fromUtf8("lbl_dev_name"))
+        self.gridLayout_4.addWidget(self.lbl_dev_name, 0, 1, 1, 1)
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.gridLayout_4.addItem(spacerItem, 0, 2, 1, 1)
+        self.label_2 = QtGui.QLabel(self.groupBox_3)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.gridLayout_4.addWidget(self.label_2, 1, 0, 1, 1)
+        self.ckb_XEN = QtGui.QCheckBox(self.groupBox_3)
+        self.ckb_XEN.setEnabled(False)
+        self.ckb_XEN.setCheckable(True)
+        self.ckb_XEN.setObjectName(_fromUtf8("ckb_XEN"))
+        self.gridLayout_4.addWidget(self.ckb_XEN, 1, 3, 1, 1)
+        self.ckb_LEN = QtGui.QCheckBox(self.groupBox_3)
+        self.ckb_LEN.setEnabled(False)
+        self.ckb_LEN.setCheckable(True)
+        self.ckb_LEN.setObjectName(_fromUtf8("ckb_LEN"))
+        self.gridLayout_4.addWidget(self.ckb_LEN, 1, 4, 1, 1)
+        self.ckb_OUT = QtGui.QCheckBox(self.groupBox_3)
+        self.ckb_OUT.setEnabled(False)
+        self.ckb_OUT.setObjectName(_fromUtf8("ckb_OUT"))
+        self.gridLayout_4.addWidget(self.ckb_OUT, 0, 3, 1, 1)
+        self.horizontalLayout_3.addLayout(self.gridLayout_4)
+        self.gridLayout.addWidget(self.groupBox_3, 1, 0, 1, 2)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 640, 23))
+        self.menubar.setObjectName(_fromUtf8("menubar"))
+        MainWindow.setMenuBar(self.menubar)
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        self.groupBox_2.setTitle(_translate("MainWindow", "Channel 2", None))
+        self.groupBox.setTitle(_translate("MainWindow", "Channel 1", None))
+        self.label_3.setText(_translate("MainWindow", "Imax", None))
+        self.label_4.setText(_translate("MainWindow", "Imon", None))
+        self.groupBox_4.setTitle(_translate("MainWindow", "GroupBox", None))
+        self.radio_CP.setText(_translate("MainWindow", "Constant Power", None))
+        self.radio_CC.setText(_translate("MainWindow", "Constant Current", None))
+        self.groupBox_3.setTitle(_translate("MainWindow", "General", None))
+        self.push_REN.setText(_translate("MainWindow", "Remote Enable", None))
+        self.label.setText(_translate("MainWindow", "Device Name:", None))
+        self.lbl_fw_ver.setText(_translate("MainWindow", "TextLabel", None))
+        self.lbl_dev_name.setText(_translate("MainWindow", "TextLabel", None))
+        self.label_2.setText(_translate("MainWindow", "Firmware version:", None))
+        self.ckb_XEN.setText(_translate("MainWindow", "External", None))
+        self.ckb_LEN.setText(_translate("MainWindow", "Local", None))
+        self.ckb_OUT.setText(_translate("MainWindow", "Output", None))
+

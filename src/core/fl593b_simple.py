@@ -15,44 +15,11 @@ import time
 import threading
 import array
 import logging
+
 import usb.core
 import usb.util
 from fl593b_constants import *
 from Packets import CommandPacket, ResponsePacket
-
-
-class Channel(object):
-    _mode = None
-    _max = None
-    _set = None
-
-    def __init__(self, chan_type=None, name=None):
-        self.name = name if name is not None else 'Unknown'
-        self.channel_type = chan_type if chan_type is not None else 'control'
-
-        if self.channel_type == 'control':
-            self.stuff = 'control stuff'
-        else:
-            self.stuff = 'laser channel stuff'
-
-    def update(self):
-        """Update attached properties"""
-        pass
-
-    @property
-    def mode(self):
-        if self._mode is None:
-            pass
-        else:
-            return self._mode
-
-    @property
-    def imon(self):
-        pass
-
-    @property
-    def pmon(self):
-        pass
 
 
 class FL593B(object):
@@ -63,6 +30,39 @@ class FL593B(object):
     _output_enabled = None
     _remote_enabled = None
     _external_enabled = None
+
+    class Channel(object):
+        _mode = None
+        _max = None
+        _set = None
+
+        def __init__(self, parent, chan_type=None, name=None):
+            self.name = name if name is not None else 'Unknown'
+            self.channel_type = chan_type if chan_type is not None else 'control'
+
+            if self.channel_type == 'control':
+                self.stuff = 'control stuff'
+            else:
+                self.stuff = 'laser channel stuff'
+
+        def update(self):
+            """Update attached properties"""
+            pass
+
+        @property
+        def mode(self):
+            if self._mode is None:
+                pass
+            else:
+                return self._mode
+
+        @property
+        def imon(self):
+            pass
+
+        @property
+        def pmon(self):
+            pass
 
     def __init__(self, config=None):
         self.log = logging.getLogger(__name__)
@@ -90,7 +90,7 @@ class FL593B(object):
 
         # TODO: That looks like a stupid idea. Maybe separate, then I could iterate over the channels.
         self.control = self.channels[0]
-        self.alarms = dict((n, False) for n in range(10))
+        self.alarms = dict()
 
     def attach(self, configuration, name=None, vendorId=VENDOR_ID, productID=PRODUCT_ID):
         """Find and attach to the USB device with given vendorID and productID.
@@ -184,10 +184,9 @@ class FL593B(object):
             self.log.info('{0:<20s}: {1:s}\n'.format(ALARM_FLAG_DICT[i], flag))
 
     def update_alarms(self):
-        self.log.debug('Alarm update:')
-        rsp_packet = self.transceive(CommandPacket(op_type=TYPE_READ, op_code=CMD_ALARM))
-        for n in range(10):
-            self.alarms[n] = True if rsp_packet.data[n] == 49 else False
+        if self.log is not None:
+            self.log.debug('Updating alarm states')
+        pass
 
     # def static_property_decorator(self, device, op_code, dev_type=0x00, channel=0, op_type=TYPE_READ, data=None):
     #     """Decorator for device properties."""
@@ -218,19 +217,23 @@ class FL593B(object):
         """Output enabled when all three enable conditions are met:
         XEN, LEN, REN must be true.
         """
-        return self.alarms[0]
+        pass
+        #return self.alarms[ALARM_FLAG_DICT[0]]
 
     @property
     def external_enable(self):
-        return self.alarms[1]
+        return self.alarms[ALARM_FLAG_DICT[1]]
 
     @property
     def local_enable(self):
-        return self.alarms[2]
+        return self.alarms[ALARM_FLAG_DICT[2]]
 
     @property
     def remote_enable(self):
-        return self.alarms[3]
+        if self.alarms is None:
+            self.update_alarms()
+        self.log.debug('Output enabled:')
+        return self.alarms[ALARM_FLAG_DICT[3]]
 
     @remote_enable.setter
     def remote_enable(self, state):

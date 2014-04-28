@@ -7,7 +7,7 @@ Created on 4/5/14 3:31 AM 2013
 GUI controlling PyFL593B interface instance
 """
 
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 
 import logging
 import sys

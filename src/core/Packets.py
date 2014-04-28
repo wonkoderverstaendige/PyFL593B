@@ -32,9 +32,9 @@ class Packet(object):
         return self.length
 
     def __repr__(self):
-        if self._packet_array is None:
+        packet = self.packet
+        if packet is None:
             return 'No array!!!'
-        packet = self._packet_array
         if self.end_code is not None:
             names = ['DevType', 'Channel', 'OpType', 'OpCode', 'EndCode', 'Data']
         else:
@@ -44,12 +44,17 @@ class Packet(object):
         return ''.join(['{0:<7s}: {1:s}\n'.format(n, f) for n, f in zip(names, fields)])
 
     def __str__(self):
-        return str(self._packet_array)
+        if self.packet is not None:
+            return self.packet.tostring().strip(chr(0))
 
     @property
     def packet(self):
         """String of bytes representing the packet."""
         return self._packet_array
+
+    @property
+    def data_str(self):
+        return None if self.data is None else self.data.tostring().strip(chr(0))
 
 
 class CommandPacket(Packet):
@@ -67,7 +72,7 @@ class CommandPacket(Packet):
 
     @property
     def packet(self):
-        """String of bytes representing the packet."""
+        """Array of bytes representing the packet."""
         if self._packet_array is None:
             packet = [self.dev_type, self.channel, self.op_type, self.op_code]
             packet.extend(self.data)

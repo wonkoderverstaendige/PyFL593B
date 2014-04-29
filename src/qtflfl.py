@@ -52,6 +52,8 @@ class ChannelWidget(QtGui.QWidget, ChannelUi.Ui_Channel):
             self.lbl_imon_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.imon))
             self.lbl_pmon_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.pmon))
             self.lbl_limit_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.max))
+
+            self.slider_iset.setMaximum(self.laser_channel.max)
             self.lbl_set_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.setpoint))
 
             # current OR power level limits and setpoint

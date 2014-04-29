@@ -191,8 +191,6 @@ class Main(QtGui.QMainWindow):
                                                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             if self.device is not None:
-                # When exiting, disable the remote enable flag to reduce risk of accidental pew pew!
-                self.toggle_remote_enable(False)
                 self.device.close()
             event.accept()
         else:

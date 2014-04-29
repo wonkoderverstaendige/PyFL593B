@@ -55,6 +55,15 @@ class LaserChannel(object):
     def initialize(self):
         """First things to do once device is ready to talk to."""
         self.log.debug('Initializing laser channel {0:d}'.format(self.id))
+        self.zero(AUTO_START_ZERO_LIMIT, AUTO_START_ZERO_SET)
+
+    def zero(self, zero_limit, zero_setpoint):
+        if zero_limit:
+            self.log.debug('Zero limit Channel {0:d}'.format(self.id))
+            self.set_limit(0.0)
+        if zero_setpoint:
+            self.log.debug('Zero setpoint Channel {0:d}'.format(self.id))
+            self.set_setpoint(0.0)
 
     def update(self):
         """Update attached properties"""
@@ -133,6 +142,9 @@ class LaserChannel(object):
                                data=[ord(c) for c in str(float(value))])
         rp = self.parent.transceive(packet)
 
+    def close(self):
+        self.zero(AUTO_EXIT_ZERO_LIMIT, AUTO_EXIT_ZERO_SET)
+
 
 class ControlChannel(object):
     _track = None
@@ -179,6 +191,10 @@ class ControlChannel(object):
                 self.log.error("Failed conversation attempt {0:d}".format(n))
             else:
                 self._model = rp.data_str
+
+        if AUTO_START_DISABLE_REMOTE:
+            self.log.debug('Disabling remote enable on startup')
+            self.remote_enable = False
 
         # update firmware version
         rp = self.parent.transceive(self.packets['read_fwver'])
@@ -252,6 +268,12 @@ class ControlChannel(object):
     def remote_enable(self, state):
         rp = self.parent.transceive(CommandPacket(op_type=TYPE_WRITE, op_code=CMD_ENABLE,
                                                   data=[FLAG_ON if state else FLAG_OFF]))
+
+    def close(self):
+        # When exiting, disable the remote enable flag to reduce risk of accidental pew pew!
+        if AUTO_EXIT_DISABLE_REMOTE:
+            self.log.debug('Disabling remote enable on exit')
+            self.remote_enable = False
 
 
 class FL593FL(object):
@@ -429,6 +451,9 @@ class FL593FL(object):
         self.device.reset()
 
     def close(self):
+        for key in self.channels:
+            self.channels[key].close()
+        self.control.close()
         self.device.reset()
         del self.device
 

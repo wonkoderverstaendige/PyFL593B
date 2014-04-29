@@ -6,6 +6,16 @@ Created on 4/8/14 1:48 PM 2013
 Constants used by the FL593FL device class.
 """
 
+# DEVICE BEHAVIOR
+TIMEOUT = 100  # default timeout of read/write is 1000 ms
+AUTO_EXIT_ZERO_SET = True  # For safety reasons, try to disable
+AUTO_EXIT_ZERO_LIMIT = True  # For safety reasons, try to zero
+AUTO_EXIT_DISABLE_REMOTE = True  # For safety reasons, try to zero
+
+AUTO_START_ZERO_SET = True  # For safety reasons, try to disable
+AUTO_START_ZERO_LIMIT = True  # For safety reasons, try to zero
+AUTO_START_DISABLE_REMOTE = True  # For safety reasons, try to zero
+
 # DEVICE CONSTANTS
 VENDOR_ID = 0x1a45
 PRODUCT_ID = 0x2001
@@ -14,7 +24,6 @@ EP_ADDR_OUT = 0x01
 EP_PACK_OUT = 20
 EP_ADDR_IN = 0x82
 EP_PACK_IN = 21
-TIMEOUT = 100  # default timeout of read/write is 1000 ms
 
 # WEISUB protocol constants
 # end codes

@@ -8,18 +8,14 @@ FL593B evaluation board USB interface class
 """
 
 import sys
-
-if sys.hexversion > 0x03000000:
-    raise EnvironmentError('Python 3 not supported.')
-
-import time
-import threading
-import array
 import logging
 import usb.core
 import usb.util
 from fl593b_constants import *
 from Packets import CommandPacket, ResponsePacket
+
+if sys.hexversion > 0x03000000:
+    raise EnvironmentError('Python 3 not supported.')
 
 
 class LaserChannel(object):
@@ -67,7 +63,6 @@ class LaserChannel(object):
         rp = self.parent.transceive(self.packets['read_mode'])
         if rp is not None:
             self._mode = bool(rp.data_str)
-        self.log.debug('Laser channel {0:d} initialized!'.format(self.id))
 
         # update imon
         rp = self.parent.transceive(self.packets['read_imon'])
@@ -79,7 +74,7 @@ class LaserChannel(object):
         if rp is not None:
             self._pmon = float(rp.data_str)
 
-        # update pmon
+        # update limit
         rp = self.parent.transceive(self.packets['read_limit'])
         if rp is not None:
             self._max = float(rp.data_str)
@@ -120,8 +115,6 @@ class LaserChannel(object):
                                op_code=CMD_LIMIT,
                                data=[ord(c) for c in str(float(value))])
         rp = self.parent.transceive(packet)
-        if rp:
-            self.parent.show_packet(rp)
 
     @property
     def setpoint(self):
@@ -139,8 +132,6 @@ class LaserChannel(object):
                                op_code=CMD_SETPOINT,
                                data=[ord(c) for c in str(float(value))])
         rp = self.parent.transceive(packet)
-        if rp:
-            self.parent.show_packet(rp)
 
 
 class ControlChannel(object):
@@ -191,7 +182,7 @@ class ControlChannel(object):
         # update firmware version
         rp = self.parent.transceive(self.packets['read_fwver'])
         if rp is not None:
-            self._fwver = rp.data_str
+            self._fwver = '{0:.2f}'.format(float(rp.data_str))
 
         # update serial number
         rp = self.parent.transceive(self.packets['read_serial'])
@@ -216,12 +207,10 @@ class ControlChannel(object):
 
     def update_alarms(self):
         """Update alarm flags"""
-        #self.log.debug('Updating control channel alarms')
+        self.log.debug('Updating control channel alarms')
         rp = self.parent.transceive(self.packets['read_alarm'])
         if rp is not None:
             self.alarms = {n: rp.data[n] == FLAG_ON for n in range(10)}
-            # for n in range(10):
-            #     self.alarms[n] = True if rp.data[n] == FLAG_ON else False  # was 49
 
     @property
     def channel_count(self):
@@ -234,6 +223,10 @@ class ControlChannel(object):
     @property
     def fwver(self):
         return self._fwver
+
+    @property
+    def serial(self):
+        return self._serial
 
     @property
     def output_enable(self):
@@ -303,12 +296,14 @@ class FL593B(object):
         self.log.info('FL593B attached.')
         self.log.debug('Attached device %s', self.device)
 
-        # Not necessary, as this is not an HID?
+        # May  be unnecessary, as this is not an HID
         try:
             self.log.debug('Attempting to detach kernel driver...')
             self.device.detach_kernel_driver(0)
             self.log.debug('Kernel driver detached.')
-        except:  # this usually mean that kernel driver has already been detached
+        except BaseException as error:
+            print error
+            # this usually mean that kernel driver had not been attached to being with.
             self.log.debug('Kernel driver detachment failed. No worries.')
 
         self.show_configurations()
@@ -424,9 +419,19 @@ class FL593B(object):
 
     @property
     def channel_count(self):
+        self.log.debug('Channel count:')
         return self.control.channel_count
 
+    @property
+    def serial(self):
+        self.log.debug('Serial number:')
+        return self.control.serial
+
     def reset(self):
+        """Reset USB bus. or something like that. Seems to fix problems where device becomes
+        unresponsive, especially when previous interaction failed or was disrupted mid-transfer,
+        leaving packets floating around in buffers.
+        """
         self.device.reset()
 
     def close(self):

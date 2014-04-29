@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ChannelUi.ui'
 #
-# Created: Mon Apr 28 06:30:04 2014
+# Created: Tue Apr 29 04:17:28 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -42,6 +42,8 @@ class Ui_Channel(object):
         self.groupBox = QtGui.QGroupBox(self.frame)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
         self.horizontalLayout = QtGui.QHBoxLayout(self.groupBox)
+        self.horizontalLayout.setSpacing(0)
+        self.horizontalLayout.setMargin(0)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         self.gridLayout_2 = QtGui.QGridLayout()
         self.gridLayout_2.setHorizontalSpacing(2)
@@ -55,6 +57,7 @@ class Ui_Channel(object):
         spacerItem = QtGui.QSpacerItem(0, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.gridLayout_2.addItem(spacerItem, 2, 5, 1, 1)
         self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setSpacing(0)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         spacerItem1 = QtGui.QSpacerItem(0, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)
@@ -119,6 +122,8 @@ class Ui_Channel(object):
         self.slider_iset.setSizePolicy(sizePolicy)
         self.slider_iset.setMaximum(250)
         self.slider_iset.setOrientation(QtCore.Qt.Vertical)
+        self.slider_iset.setTickPosition(QtGui.QSlider.TicksBothSides)
+        self.slider_iset.setTickInterval(25)
         self.slider_iset.setObjectName(_fromUtf8("slider_iset"))
         self.horizontalLayout_3.addWidget(self.slider_iset)
         self.gridLayout_2.addLayout(self.horizontalLayout_3, 2, 3, 2, 1)
@@ -143,6 +148,8 @@ class Ui_Channel(object):
         self.slider_imax = QtGui.QSlider(self.groupBox)
         self.slider_imax.setMaximum(250)
         self.slider_imax.setOrientation(QtCore.Qt.Vertical)
+        self.slider_imax.setTickPosition(QtGui.QSlider.TicksBothSides)
+        self.slider_imax.setTickInterval(25)
         self.slider_imax.setObjectName(_fromUtf8("slider_imax"))
         self.horizontalLayout_4.addWidget(self.slider_imax)
         self.gridLayout_2.addLayout(self.horizontalLayout_4, 2, 1, 1, 1)
@@ -150,7 +157,6 @@ class Ui_Channel(object):
         self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
         self.progbar_imon = QtGui.QProgressBar(self.groupBox)
         self.progbar_imon.setMaximum(250)
-        self.progbar_imon.setProperty("value", 0)
         self.progbar_imon.setOrientation(QtCore.Qt.Vertical)
         self.progbar_imon.setObjectName(_fromUtf8("progbar_imon"))
         self.horizontalLayout_5.addWidget(self.progbar_imon)

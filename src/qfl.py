@@ -28,7 +28,7 @@ class ChannelWidget(QtGui.QWidget, Ui_Channel):
         super(ChannelWidget, self).__init__()
         self.setupUi(self)
         self.parent = parent
-        self.groupBox.setTitle('Channel %d' % (num_channel))
+        self.groupBox.setTitle('Channel {0:d}'.format(num_channel))
         self.num_channel = num_channel
         self.laser_channel = None
 
@@ -46,16 +46,20 @@ class ChannelWidget(QtGui.QWidget, Ui_Channel):
             else:
                 self.radio_CP.setChecked(True)
 
-            self.progbar_imon.setValue(int(self.laser_channel.imon))
-            self.progbar_pmon.setValue(int(self.laser_channel.pmon))
-
+            # Current and power levels
+            imon = int(self.laser_channel.imon)
+            self.progbar_imon.setValue(imon if imon >= 0 else 0)
+            pmon = int(self.laser_channel.pmon)
+            self.progbar_pmon.setValue(pmon if pmon >= 0 else 0)
             self.lbl_imon_dbg.setText('{0:.1f} mA'.format(self.laser_channel.imon))
             self.lbl_limit_dbg.setText('{0:.1f} mA'.format(self.laser_channel.max))
             self.lbl_set_dbg.setText('{0:.1f} mA'.format(self.laser_channel.setpoint))
-            # if self.laser_channel.max is not None:
-            #     self.slider_imax.setValue(int(self.laser_channel.max))
-            # if self.laser_channel.setpoint is not None:
-            #     self.slider_iset.setValue(int(self.laser_channel.setpoint))
+
+            # current OR power level limits and setpoint
+            if self.laser_channel.max is not None:
+                self.slider_imax.setValue(int(self.laser_channel.max))
+            if self.laser_channel.setpoint is not None:
+                self.slider_iset.setValue(int(self.laser_channel.setpoint))
 
     def set_setpoint(self, value):
         if self.laser_channel is not None:
@@ -88,7 +92,7 @@ class Main(QtGui.QMainWindow):
         self.ui.push_REN.toggled.connect(self.toggle_output_enabled)
 
         self.stopwatch = QtCore.QElapsedTimer()
-        self.gui_refresh_interval = 100  # conservative 100 ms for starters, aka 10 Hz refresh rate
+        self.gui_refresh_interval = 16  # conservative 100 ms for starters, aka 10 Hz refresh rate
         QtCore.QTimer.singleShot(0, self.initialize)  # fires when event loop starts
 
     def initialize(self):
@@ -112,6 +116,8 @@ class Main(QtGui.QMainWindow):
             self.ui.lbl_dev_name.setText(self.device.model)
         if self.device.fwver is not None:
             self.ui.lbl_fw_ver.setText(self.device.fwver)
+        if self.device.serial is not None:
+            self.ui.lbl_serial_num.setText(self.device.serial)
 
         self.ui.push_REN.setChecked(self.device.control.remote_enable)
 
@@ -173,7 +179,7 @@ def main(*args, **kwargs):
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Command line parsing

@@ -203,7 +203,7 @@ def main(*args, **kwargs):
     # identifiers for QSettings persistent application settings
     app.setOrganizationName('battaglia_lab')
     app.setOrganizationDomain('science.ru.nl')
-    app.setApplicationName('FL593B')
+    app.setApplicationName('FL593FL')
 
     window = Main(app, *args, **kwargs)
     window.show()

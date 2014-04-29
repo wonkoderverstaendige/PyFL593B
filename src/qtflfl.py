@@ -91,7 +91,9 @@ class Main(QtGui.QMainWindow):
         self.ui.push_REN.toggled.connect(self.toggle_remote_enable)
 
         self.stopwatch = QtCore.QElapsedTimer()
+        self.stopwatch.start()
         self.gui_refresh_interval = 16  # conservative 100 ms for starters, aka 10 Hz refresh rate
+        self.elapsed = self.gui_refresh_interval if self.gui_refresh_interval > 0 else 30
         QtCore.QTimer.singleShot(0, self.initialize)  # fires when event loop starts
 
     def initialize(self):
@@ -125,9 +127,9 @@ class Main(QtGui.QMainWindow):
     def refresh(self):
         """Main loop processing/updating."""
 
-        # update rate display
-        elapsed = self.stopwatch.restart()
-        self.ui.lbl_fps.setText('{0:.1f} Hz'.format(1000./elapsed))
+        # update rate display (smoothed)
+        self.elapsed = 0.8*self.elapsed + 0.2*self.stopwatch.restart()
+        self.ui.lbl_fps.setText('{0:.0f} Hz'.format(1000./self.elapsed))
 
         # have the device update itself
         self.device.update()
@@ -146,12 +148,13 @@ class Main(QtGui.QMainWindow):
     def refresh_enable_flags(self):
         """Update enable flag indicators for local, external and remote flags."""
         #self.log.debug('Refreshing enable flags')
+
+        self.toggle_laser_warning(self.device.control.output_enable)
+
         self.set_enable_icon(self.ui.lbl_external_icon, self.device.control.external_enable)
         self.set_enable_icon(self.ui.lbl_output_icon, self.device.control.output_enable)
         self.set_enable_icon(self.ui.lbl_local_icon, self.device.control.local_enable)
         self.ui.push_REN.setChecked(self.device.control.remote_enable)
-
-        self.toggle_laser_warning(self.device.control.output_enable)
 
     @property
     def device(self):
@@ -168,8 +171,8 @@ class Main(QtGui.QMainWindow):
         self.device.control.remote_enable = state
 
     def toggle_laser_warning(self, state):
-        if self.ui.lbl_laser_warning.isVisible() != state:
-            self.ui.lbl_laser_warning.setVisible(state)
+        if self.ui.lbl_laser_warning.isEnabled() != state:
+            self.ui.lbl_laser_warning.setEnabled(state)
 
     @staticmethod
     def set_enable_icon(widget, state):

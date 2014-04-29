@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindowUi.ui'
 #
-# Created: Tue Apr 29 20:41:51 2014
+# Created: Tue Apr 29 21:30:32 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -173,6 +173,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.lbl_laser_warning = QtGui.QLabel(self.groupBox_3)
+        self.lbl_laser_warning.setEnabled(False)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>enabled_true.svg</file>
+    <file>laser_warning.svg</file>
+    <file>enabled_true.png</file>
+    <file>enabled_false.png</file>
+    <file>enabled_false.svg</file>
+  </qresource>
+</RCC>

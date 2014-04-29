@@ -172,6 +172,7 @@ class ControlChannel(object):
         self.log.debug('Initializing control channel')
 
         # update model and loop to avoid initial troubles in communication (device boots?)
+        # FIXME: Pause for 200-300 ms or so before starting communication
         for n in range(10):
             rp = self.parent.transceive(self.packets['read_model'])
             if not rp:

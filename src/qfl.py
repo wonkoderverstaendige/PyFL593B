@@ -9,20 +9,18 @@ Created on 4/8/14 2:14 PM 2013
 import sys
 import logging
 from PyQt4 import QtGui, QtCore
+from ui import MainWindowUi, ChannelUi, icons_rc
+from core.fl593b import FL593B
 # try:
 #     from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
 #     import lib.pyqtgraph as pg
 # except ImportError:
 #     pg = None
 
-from ui.MainWindowUi import Ui_MainWindow
-from ui.ChannelUi import Ui_Channel
-from core.fl593b import FL593B
-
 NO_EXIT_CONFIRMATION = True
 
 
-class ChannelWidget(QtGui.QWidget, Ui_Channel):
+class ChannelWidget(QtGui.QWidget, ChannelUi.Ui_Channel):
     def __init__(self, parent, num_channel):
         self.log = logging.getLogger(__name__)
         super(ChannelWidget, self).__init__()
@@ -79,7 +77,7 @@ class Main(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.log = logging.getLogger(__name__)
         self.app = app
-        self.ui = Ui_MainWindow()
+        self.ui = MainWindowUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
         self.ui.actionReset.triggered.connect(self.reset_device)
@@ -89,7 +87,7 @@ class Main(QtGui.QMainWindow):
         self.channel_widgets = []
 
         # Control widget
-        self.ui.push_REN.toggled.connect(self.toggle_output_enabled)
+        self.ui.push_REN.toggled.connect(self.toggle_remote_enable)
 
         self.stopwatch = QtCore.QElapsedTimer()
         self.gui_refresh_interval = 16  # conservative 100 ms for starters, aka 10 Hz refresh rate
@@ -119,38 +117,73 @@ class Main(QtGui.QMainWindow):
         if self.device.serial is not None:
             self.ui.lbl_serial_num.setText(self.device.serial)
 
-        self.ui.push_REN.setChecked(self.device.control.remote_enable)
-
-        self.refresh()
+        if self.device is not None:
+            # start main refresh loop
+            self.refresh()
 
     def refresh(self):
+        """Main loop processing/updating."""
+
+        # update rate display
         elapsed = self.stopwatch.restart()
         self.ui.lbl_fps.setText('{0:.1f} Hz'.format(1000./elapsed))
-        self.device.update()
-        self.ui.ckb_OUT.setChecked(self.device.control.output_enable)
-        self.ui.ckb_LEN.setChecked(self.device.control.local_enable)
-        self.ui.ckb_XEN.setChecked(self.device.control.external_enable)
-        self.ui.push_REN.setChecked(self.device.control.remote_enable)
 
+        # have the device update itself
+        self.device.update()
+
+        # Control channel items
+        self.refresh_enable_flags()
+
+        # Laser channel widgets
         for widget in self.channel_widgets:
             widget.refresh()
 
+        # start timer for next refresh
+        #self.log.debug('Next loop shot')
         QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
 
-    def reset_device(self):
-        self.device.reset()
+    def refresh_enable_flags(self):
+        """Update enable flag indicators for local, external and remote flags."""
+        #self.log.debug('Refreshing enable flags')
+        self.set_enable_icon(self.ui.lbl_external_icon, self.device.control.external_enable)
+        self.set_enable_icon(self.ui.lbl_output_icon, self.device.control.output_enable)
+        self.set_enable_icon(self.ui.lbl_local_icon, self.device.control.local_enable)
+        self.ui.push_REN.setChecked(self.device.control.remote_enable)
+
+        self.toggle_laser_warning(self.device.control.output_enable)
 
     @property
     def device(self):
         """Getter for device handle."""
         return self._device_ref
 
-    def toggle_output_enabled(self, state):
+    def reset_device(self):
+        """Reset device (bus). """
+        self.device.reset()
+
+    def toggle_remote_enable(self, state):
+        """Toggle the state of the remote enable flag when toggling the checkbutton."""
+        self.log.info('Setting remote enable {0:s}'.format('ON' if state else 'OFF'))
         self.device.control.remote_enable = state
 
+    def toggle_laser_warning(self, state):
+        if self.ui.lbl_laser_warning.isVisible() != state:
+            print 'updating state'
+            self.ui.lbl_laser_warning.setVisible(state)
+
+    @staticmethod
+    def set_enable_icon(widget, state):
+        """Set pixmap of label with ON or OFF marker from the icons_rc.qrc file.
+
+        Imported from ui.icons_rc."""
+        #self.log.debug('Setting flag {0:b} for {1:s}'.format(state, str(widget)))
+        if state:
+            widget.setPixmap(QtGui.QPixmap(MainWindowUi._fromUtf8(":/icons/enabled_true.png")))
+        else:
+            widget.setPixmap(QtGui.QPixmap(MainWindowUi._fromUtf8(":/icons/enabled_false.png")))
+
     def closeEvent(self, event):
-        """Quitting.
-        """
+        """This party sucks. The moment I find my pants I'm out of here!"""
         if NO_EXIT_CONFIRMATION:
             reply = QtGui.QMessageBox.Yes
         else:
@@ -158,6 +191,8 @@ class Main(QtGui.QMainWindow):
                                                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             if self.device is not None:
+                # When exiting, disable the remote enable flag to reduce risk of accidental pew pew!
+                self.toggle_remote_enable(False)
                 self.device.close()
             event.accept()
         else:
@@ -168,9 +203,9 @@ class Main(QtGui.QMainWindow):
 def main(*args, **kwargs):
     app = QtGui.QApplication([])
     # identifiers for QSettings persistent application settings
-    app.setOrganizationName('spotter_inc')
-    app.setOrganizationDomain('spotter.sp')
-    app.setApplicationName('Spotter')
+    app.setOrganizationName('battaglia_lab')
+    app.setOrganizationDomain('science.ru.nl')
+    app.setApplicationName('FL593B')
 
     window = Main(app, *args, **kwargs)
     window.show()

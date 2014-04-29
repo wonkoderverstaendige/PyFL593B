@@ -4,7 +4,7 @@
 Created on 4/5/14 3:31 AM 2013
 @author: <'Ronny Eichler'> ronny.eichler@gmail.com
 
-GUI controlling PyFL593B interface instance
+Server controlling PyFL593FL interface instance
 """
 
 __version__ = '0.1.0'
@@ -13,7 +13,7 @@ import logging
 import sys
 if sys.hexversion > 0x03000000:
     raise EnvironmentError('Python 3 not supported.')
-from core.fl593b import FL593B
+from core.fl593fl import FL593FL
 
 
 def main(*args, **kwargs):

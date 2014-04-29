@@ -1,7 +1,7 @@
-PyFL593B
+PyFL593FL
 ==========
 
-Python/PyUSB interface to the FL593B evaluation board for the TeamWavelength FL500 laser diode driver.
+Python/PyUSB interface to the FL593FL evaluation board for the TeamWavelength FL500 laser diode driver.
 
 
 Installation

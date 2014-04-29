@@ -7,7 +7,7 @@ Created on 4/8/14 2:22 PM 2013
 
 import array
 import logging
-from fl593b_constants import *
+from fl593fl_constants import *
 
 
 class Packet(object):

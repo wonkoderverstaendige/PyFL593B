@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindowUi.ui'
 #
-# Created: Tue Apr 29 20:04:54 2014
+# Created: Tue Apr 29 20:41:51 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -217,7 +217,7 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
-        MainWindow.setWindowTitle(_translate("MainWindow", "FL593BewPew", None))
+        MainWindow.setWindowTitle(_translate("MainWindow", "FL593FL", None))
         self.groupBox_3.setTitle(_translate("MainWindow", "Status", None))
         self.lbl_dev_name.setText(_translate("MainWindow", "NO_CONN", None))
         self.lbl_model_lbl.setText(_translate("MainWindow", "Device:", None))

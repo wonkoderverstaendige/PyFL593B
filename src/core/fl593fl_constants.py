@@ -3,7 +3,7 @@
 Created on 4/8/14 1:48 PM 2013
 @author: <'Ronny Eichler'> ronny.eichler@gmail.com
 
-Constants used by the FL593B device class.
+Constants used by the FL593FL device class.
 """
 
 # DEVICE CONSTANTS

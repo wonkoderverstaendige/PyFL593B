@@ -10,7 +10,7 @@ import sys
 import logging
 from PyQt4 import QtGui, QtCore
 from ui import MainWindowUi, ChannelUi, icons_rc
-from core.fl593b import FL593B
+from core.fl593fl import FL593FL
 # try:
 #     from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
 #     import lib.pyqtgraph as pg
@@ -100,7 +100,7 @@ class Main(QtGui.QMainWindow):
 
         if self._device_ref is None:
             try:
-                self._device_ref = FL593B()
+                self._device_ref = FL593FL()
             except Exception, e:
                 raise e
 

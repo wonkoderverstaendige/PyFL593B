@@ -4,14 +4,14 @@
 Created on 4/5/14 3:27 AM 2013
 @author: <'Ronny Eichler'> ronny.eichler@gmail.com
 
-FL593B evaluation board USB interface class
+FL593FL evaluation board USB interface class
 """
 
 import sys
 import logging
 import usb.core
 import usb.util
-from fl593b_constants import *
+from fl593fl_constants import *
 from Packets import CommandPacket, ResponsePacket
 
 if sys.hexversion > 0x03000000:
@@ -254,7 +254,7 @@ class ControlChannel(object):
                                                   data=[FLAG_ON if state else FLAG_OFF]))
 
 
-class FL593B(object):
+class FL593FL(object):
     def __init__(self, config=None):
         self.log = logging.getLogger(__name__)
         config = config if config is not None else 1
@@ -294,7 +294,7 @@ class FL593B(object):
         # TODO: search for a particular name
         if self.device is None:
             raise ValueError('Device not found')
-        self.log.info('FL593B attached.')
+        self.log.info('Device attached.')
         self.log.debug('Attached device %s', self.device)
 
         # May  be unnecessary, as this is not an HID
@@ -347,7 +347,7 @@ class FL593B(object):
             bw = self.endpoint_out.write(cmd_packet.packet)
             #self.log.debug('{0:d} bytes written: {1:s}'.format(bw, str(cmd_packet)))
         except usb.USBError as error:
-            print "Could not write! %s" % error
+            self.log.error("Could not write! {:s}".format(error))
             return None
 
         # Read back result
@@ -356,7 +356,7 @@ class FL593B(object):
             #self.log.debug('{0:d} bytes received: {1:s}'.format(len(resp_packet), str(resp_packet)))
             #self.show_packet(resp_packet)
         except usb.USBError as error:
-            print "Could not receive response! %s" % error
+            self.log.error("Could not receive response! {:s}".format(error))
             return None
 
         return resp_packet
@@ -370,10 +370,7 @@ class FL593B(object):
             self.log.debug('Configuration %d: %s' % (c, str(cfg.bConfigurationValue)))
 
     def show_interfaces(self):
-        """Print/log all available interfaces
-
-        Not sure this is actually a thing...
-        """
+        """Print/log all available interfaces."""
         for i, interface in enumerate(self.config):
             self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
 
@@ -387,8 +384,8 @@ class FL593B(object):
             self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
 
     def show_packet(self, packet):
-        """Logs response onto standard output, or logger
-        """
+        """Show formatted packet content. Rather useful for debugging."""
+        # TODO: Pull in description of field values.
         self.log.info(repr(packet))
 
     def show_alarms(self):
@@ -403,10 +400,6 @@ class FL593B(object):
     @property
     def is_ready(self):
         return False
-
-    @property
-    def identify(self):
-        pass
 
     @property
     def model(self):
@@ -443,7 +436,7 @@ class FL593B(object):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    dev = FL593B()
+    dev = FL593FL()
     print repr(dev.model)
     print repr(dev.fwver)
     dev.remote_enable = False

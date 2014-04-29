@@ -31,7 +31,10 @@ class ChannelWidget(QtGui.QWidget, ChannelUi.Ui_Channel):
         self.laser_channel = None
 
         self.slider_iset.valueChanged[int].connect(self.set_setpoint)
+        self.spin_set.valueChanged[int].connect(self.set_setpoint)
+
         self.slider_imax.valueChanged[int].connect(self.set_limit)
+        self.spin_max.valueChanged[int].connect(self.set_limit)
 
     def initialize(self, channel):
         self.laser_channel = channel
@@ -45,22 +48,31 @@ class ChannelWidget(QtGui.QWidget, ChannelUi.Ui_Channel):
                 self.radio_CP.setChecked(True)
 
             # Current and power levels
-            imon = int(self.laser_channel.imon)
-            self.progbar_imon.setValue(imon if imon >= 0 else 0)
-            pmon = int(self.laser_channel.pmon)
-            self.progbar_pmon.setValue(pmon if pmon >= 0 else 0)
-            self.lbl_imon_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.imon))
-            self.lbl_pmon_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.pmon))
-            self.lbl_limit_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.max))
+            imon = self.laser_channel.imon
+            pmon = self.laser_channel.pmon
+            limit = self.laser_channel.max
+            setpoint = self.laser_channel.setpoint
 
-            self.slider_iset.setMaximum(self.laser_channel.max)
-            self.lbl_set_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.setpoint))
+            # Current and power levels
+            self.progbar_imon.setValue(imon if int(imon) >= 0 else 0)
+            self.lbl_imon_dbg.setText('{0:0=5.1f}mA'.format(imon))
+            self.progbar_pmon.setValue(pmon if int(pmon) >= 0 else 0)
+            self.lbl_pmon_dbg.setText('{0:0=5.1f}mA'.format(pmon))
 
-            # current OR power level limits and setpoint
-            if self.laser_channel.max is not None:
-                self.slider_imax.setValue(int(self.laser_channel.max))
-            if self.laser_channel.setpoint is not None:
-                self.slider_iset.setValue(int(self.laser_channel.setpoint))
+            # Limit
+            self.lbl_limit_dbg.setText('{0:0=5.1f}mA'.format(limit))
+            self.slider_imax.setValue(int(limit))
+            if self.spin_max.value() != int(limit):
+                self.spin_max.setValue(int(limit))
+
+            # Setpoint
+            ## Limit is maximum for setpoint
+            self.spin_set.setMaximum(int(limit))
+            self.slider_iset.setMaximum(int(limit))
+            if self.spin_set.value() != int(setpoint):
+                self.spin_set.setValue(int(setpoint))
+            self.slider_iset.setValue(int(setpoint))
+            self.lbl_set_dbg.setText('{0:0=5.1f}mA'.format(setpoint))
 
     def set_setpoint(self, value):
         if self.laser_channel is not None:

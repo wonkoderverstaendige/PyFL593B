@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainWindowUi.ui'
 #
-# Created: Tue Apr 29 21:30:32 2014
+# Created: Tue Apr 29 23:56:08 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(402, 480)
+        MainWindow.resize(456, 480)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/laser_warning.svg")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -171,6 +171,7 @@ class Ui_MainWindow(object):
         self.line_9.setObjectName(_fromUtf8("line_9"))
         self.gridLayout_3.addWidget(self.line_9, 4, 0, 1, 7)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setMargin(3)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.lbl_laser_warning = QtGui.QLabel(self.groupBox_3)
         self.lbl_laser_warning.setEnabled(False)
@@ -198,7 +199,7 @@ class Ui_MainWindow(object):
         self.gridLayout.addWidget(self.frame, 1, 1, 1, 2)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 402, 23))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 456, 23))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuFile = QtGui.QMenu(self.menubar)
         self.menuFile.setObjectName(_fromUtf8("menuFile"))

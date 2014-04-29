@@ -55,6 +55,36 @@
            <property name="verticalSpacing">
             <number>0</number>
            </property>
+           <item row="5" column="1">
+            <widget class="QLabel" name="lbl_limit_dbg">
+             <property name="font">
+              <font>
+               <family>Ubuntu Mono</family>
+              </font>
+             </property>
+             <property name="text">
+              <string>0.000 mA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="6">
+            <widget class="QLabel" name="lbl_imon_dbg">
+             <property name="font">
+              <font>
+               <family>Ubuntu Mono</family>
+              </font>
+             </property>
+             <property name="text">
+              <string>0.000 mA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="2" rowspan="5">
             <widget class="Line" name="line_2">
              <property name="orientation">
@@ -75,26 +105,6 @@
              </property>
             </spacer>
            </item>
-           <item row="0" column="0" rowspan="5">
-            <layout class="QVBoxLayout" name="verticalLayout">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <spacer name="verticalSpacer">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>0</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
            <item row="0" column="7" rowspan="5">
             <widget class="Line" name="line_3">
              <property name="orientation">
@@ -102,13 +112,18 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="3">
-            <widget class="QSpinBox" name="spin_set">
-             <property name="suffix">
-              <string>mA</string>
+           <item row="5" column="3">
+            <widget class="QLabel" name="lbl_set_dbg">
+             <property name="font">
+              <font>
+               <family>Ubuntu Mono</family>
+              </font>
              </property>
-             <property name="maximum">
-              <number>250</number>
+             <property name="text">
+              <string>0.000 mA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
@@ -319,61 +334,6 @@
              </item>
             </layout>
            </item>
-           <item row="4" column="1">
-            <widget class="QSpinBox" name="spin_max">
-             <property name="suffix">
-              <string>mA</string>
-             </property>
-             <property name="maximum">
-              <number>250</number>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <widget class="QLabel" name="lbl_limit_dbg">
-             <property name="font">
-              <font>
-               <family>Ubuntu Mono</family>
-              </font>
-             </property>
-             <property name="text">
-              <string>0.000 mA</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="3">
-            <widget class="QLabel" name="lbl_set_dbg">
-             <property name="font">
-              <font>
-               <family>Ubuntu Mono</family>
-              </font>
-             </property>
-             <property name="text">
-              <string>0.000 mA</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="6">
-            <widget class="QLabel" name="lbl_imon_dbg">
-             <property name="font">
-              <font>
-               <family>Ubuntu Mono</family>
-              </font>
-             </property>
-             <property name="text">
-              <string>0.000 mA</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </item>
            <item row="5" column="8">
             <widget class="QLabel" name="lbl_pmon_dbg">
              <property name="font">
@@ -386,6 +346,52 @@
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" rowspan="5">
+            <layout class="QVBoxLayout" name="verticalLayout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>0</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </item>
+           <item row="4" column="1">
+            <widget class="QSpinBox" name="spin_max">
+             <property name="keyboardTracking">
+              <bool>false</bool>
+             </property>
+             <property name="suffix">
+              <string> mA</string>
+             </property>
+             <property name="maximum">
+              <number>250</number>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3">
+            <widget class="QSpinBox" name="spin_set">
+             <property name="keyboardTracking">
+              <bool>false</bool>
+             </property>
+             <property name="suffix">
+              <string> mA</string>
+             </property>
+             <property name="maximum">
+              <number>250</number>
              </property>
             </widget>
            </item>

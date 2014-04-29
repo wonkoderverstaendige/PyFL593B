@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>402</width>
+    <width>456</width>
     <height>480</height>
    </rect>
   </property>
@@ -271,6 +271,9 @@
             </item>
             <item row="5" column="5" rowspan="4" colspan="2">
              <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <property name="margin">
+               <number>3</number>
+              </property>
               <item>
                <widget class="QLabel" name="lbl_laser_warning">
                 <property name="enabled">
@@ -333,7 +336,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>402</width>
+     <width>456</width>
      <height>23</height>
     </rect>
    </property>

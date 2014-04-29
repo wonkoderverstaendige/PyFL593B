@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ChannelUi.ui'
 #
-# Created: Tue Apr 29 20:32:32 2014
+# Created: Tue Apr 29 20:39:00 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -128,6 +128,7 @@ class Ui_Channel(object):
         self.horizontalLayout_3.addWidget(self.slider_iset)
         self.gridLayout_2.addLayout(self.horizontalLayout_3, 2, 3, 2, 1)
         self.radio_CP = QtGui.QRadioButton(self.groupBox)
+        self.radio_CP.setEnabled(False)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)

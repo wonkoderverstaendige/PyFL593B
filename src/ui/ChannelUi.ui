@@ -229,6 +229,9 @@
            </item>
            <item row="4" column="8">
             <widget class="QRadioButton" name="radio_CP">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
                <horstretch>0</horstretch>

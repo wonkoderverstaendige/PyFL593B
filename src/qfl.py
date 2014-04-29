@@ -49,9 +49,10 @@ class ChannelWidget(QtGui.QWidget, ChannelUi.Ui_Channel):
             self.progbar_imon.setValue(imon if imon >= 0 else 0)
             pmon = int(self.laser_channel.pmon)
             self.progbar_pmon.setValue(pmon if pmon >= 0 else 0)
-            self.lbl_imon_dbg.setText('{0:.1f} mA'.format(self.laser_channel.imon))
-            self.lbl_limit_dbg.setText('{0:.1f} mA'.format(self.laser_channel.max))
-            self.lbl_set_dbg.setText('{0:.1f} mA'.format(self.laser_channel.setpoint))
+            self.lbl_imon_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.imon))
+            self.lbl_pmon_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.pmon))
+            self.lbl_limit_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.max))
+            self.lbl_set_dbg.setText('{0:0=5.1f}mA'.format(self.laser_channel.setpoint))
 
             # current OR power level limits and setpoint
             if self.laser_channel.max is not None:
@@ -168,7 +169,6 @@ class Main(QtGui.QMainWindow):
 
     def toggle_laser_warning(self, state):
         if self.ui.lbl_laser_warning.isVisible() != state:
-            print 'updating state'
             self.ui.lbl_laser_warning.setVisible(state)
 
     @staticmethod

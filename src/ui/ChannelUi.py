@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ChannelUi.ui'
 #
-# Created: Tue Apr 29 04:17:28 2014
+# Created: Tue Apr 29 20:32:32 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -175,14 +175,33 @@ class Ui_Channel(object):
         self.spin_max.setObjectName(_fromUtf8("spin_max"))
         self.gridLayout_2.addWidget(self.spin_max, 4, 1, 1, 1)
         self.lbl_limit_dbg = QtGui.QLabel(self.groupBox)
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu Mono"))
+        self.lbl_limit_dbg.setFont(font)
+        self.lbl_limit_dbg.setAlignment(QtCore.Qt.AlignCenter)
         self.lbl_limit_dbg.setObjectName(_fromUtf8("lbl_limit_dbg"))
         self.gridLayout_2.addWidget(self.lbl_limit_dbg, 5, 1, 1, 1)
         self.lbl_set_dbg = QtGui.QLabel(self.groupBox)
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu Mono"))
+        self.lbl_set_dbg.setFont(font)
+        self.lbl_set_dbg.setAlignment(QtCore.Qt.AlignCenter)
         self.lbl_set_dbg.setObjectName(_fromUtf8("lbl_set_dbg"))
         self.gridLayout_2.addWidget(self.lbl_set_dbg, 5, 3, 1, 1)
         self.lbl_imon_dbg = QtGui.QLabel(self.groupBox)
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu Mono"))
+        self.lbl_imon_dbg.setFont(font)
+        self.lbl_imon_dbg.setAlignment(QtCore.Qt.AlignCenter)
         self.lbl_imon_dbg.setObjectName(_fromUtf8("lbl_imon_dbg"))
         self.gridLayout_2.addWidget(self.lbl_imon_dbg, 5, 6, 1, 1)
+        self.lbl_pmon_dbg = QtGui.QLabel(self.groupBox)
+        font = QtGui.QFont()
+        font.setFamily(_fromUtf8("Ubuntu Mono"))
+        self.lbl_pmon_dbg.setFont(font)
+        self.lbl_pmon_dbg.setAlignment(QtCore.Qt.AlignCenter)
+        self.lbl_pmon_dbg.setObjectName(_fromUtf8("lbl_pmon_dbg"))
+        self.gridLayout_2.addWidget(self.lbl_pmon_dbg, 5, 8, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout_2)
         self.horizontalLayout_2.addWidget(self.groupBox)
         self.gridLayout.addWidget(self.frame, 0, 0, 1, 1)
@@ -205,7 +224,8 @@ class Ui_Channel(object):
         self.progbar_imon.setFormat(_translate("Channel", "%v mA", None))
         self.progbar_pmon.setFormat(_translate("Channel", "%v mW", None))
         self.spin_max.setSuffix(_translate("Channel", "mA", None))
-        self.lbl_limit_dbg.setText(_translate("Channel", "TextLabel", None))
-        self.lbl_set_dbg.setText(_translate("Channel", "TextLabel", None))
-        self.lbl_imon_dbg.setText(_translate("Channel", "TextLabel", None))
+        self.lbl_limit_dbg.setText(_translate("Channel", "0.000 mA", None))
+        self.lbl_set_dbg.setText(_translate("Channel", "0.000 mA", None))
+        self.lbl_imon_dbg.setText(_translate("Channel", "0.000 mA", None))
+        self.lbl_pmon_dbg.setText(_translate("Channel", "0.000 mA", None))
 

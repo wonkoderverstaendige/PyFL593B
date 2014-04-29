@@ -328,22 +328,61 @@
            </item>
            <item row="5" column="1">
             <widget class="QLabel" name="lbl_limit_dbg">
+             <property name="font">
+              <font>
+               <family>Ubuntu Mono</family>
+              </font>
+             </property>
              <property name="text">
-              <string>TextLabel</string>
+              <string>0.000 mA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item row="5" column="3">
             <widget class="QLabel" name="lbl_set_dbg">
+             <property name="font">
+              <font>
+               <family>Ubuntu Mono</family>
+              </font>
+             </property>
              <property name="text">
-              <string>TextLabel</string>
+              <string>0.000 mA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item row="5" column="6">
             <widget class="QLabel" name="lbl_imon_dbg">
+             <property name="font">
+              <font>
+               <family>Ubuntu Mono</family>
+              </font>
+             </property>
              <property name="text">
-              <string>TextLabel</string>
+              <string>0.000 mA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="8">
+            <widget class="QLabel" name="lbl_pmon_dbg">
+             <property name="font">
+              <font>
+               <family>Ubuntu Mono</family>
+              </font>
+             </property>
+             <property name="text">
+              <string>0.000 mA</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>

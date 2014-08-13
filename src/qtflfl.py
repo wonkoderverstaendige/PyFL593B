@@ -17,8 +17,8 @@ from core.fl593fl import FL593FL
 # except ImportError:
 #     pg = None
 
-NO_EXIT_CONFIRMATION = True
-
+NO_EXIT_CONFIRMATION = False
+__version__ = '0.1'
 
 class ChannelWidget(QtGui.QWidget, ChannelUi.Ui_Channel):
     def __init__(self, parent, num_channel):
@@ -233,6 +233,15 @@ if __name__ == "__main__":
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Command line parsing
+    import argparse
+    parser = argparse.ArgumentParser(prog='PyFL593FL Qt GUI')
+    parser.add_argument('-d', '--DEBUG', action='store_true', 
+                        help='Debug mode. Actually, only disables exit confirmation.')
+    parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
+    cli_args = parser.parse_args()
+
+    if cli_args.DEBUG:
+        NO_EXIT_CONFIRMATION = True 
 
     # Let's roll
     main()

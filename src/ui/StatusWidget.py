@@ -54,7 +54,7 @@ class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):
         """Toggle the state of the remote enable flag when toggling the checkbutton."""
         if self.device is None:
             return
-        self.log.info('Setting remote enable {0:s}'.format('ON' if state else 'OFF'))
+        self.log.debug('Setting remote enable {0:s}'.format('ON' if state else 'OFF'))
         self.device.control.remote_enable = state
 
     def toggle_laser_warning(self, state):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on 4/5/14 3:27 AM 2013
+Created on 05 Apr 2014 3:27 AM
 @author: <'Ronny Eichler'> ronny.eichler@gmail.com
 
 FL593FL evaluation board USB interface class

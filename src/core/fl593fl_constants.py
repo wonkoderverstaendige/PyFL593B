@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on 4/8/14 1:48 PM 2013
+Created on 08 Apr 2014 1:48 PM
 @author: <'Ronny Eichler'> ronny.eichler@gmail.com
 
 Constants used by the FL593FL device class.

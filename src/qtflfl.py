@@ -12,14 +12,10 @@ from PyQt4 import QtGui, QtCore
 from ui import MainWindowUi, icons_rc
 from ui.ChannelWidget import ChannelWidget
 from core.fl593fl import FL593FL
-# try:
-#     from lib.pyqtgraph import QtGui, QtCore  # ALL HAIL LUKE!
-#     import lib.pyqtgraph as pg
-# except ImportError:
-#     pg = None
 
-NO_EXIT_CONFIRMATION = False
 __version__ = '0.1'
+LOG_LEVEL = logging.INFO
+NO_EXIT_CONFIRMATION = False
 
 
 class Main(QtGui.QMainWindow):
@@ -98,7 +94,6 @@ class Main(QtGui.QMainWindow):
 
     def refresh_enable_flags(self):
         """Update enable flag indicators for local, external and remote flags."""
-        #self.log.debug('Refreshing enable flags')
 
         self.toggle_laser_warning(self.device.control.output_enable)
 
@@ -166,9 +161,6 @@ def main(*args, **kwargs):
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
     # Command line parsing
     import argparse
     parser = argparse.ArgumentParser(prog='PyFL593FL Qt GUI')
@@ -179,6 +171,9 @@ if __name__ == "__main__":
 
     if cli_args.DEBUG:
         NO_EXIT_CONFIRMATION = True 
+        LOG_LEVEL = logging.DEBUG
+
+    logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # Let's roll
     main()

@@ -1,7 +1,7 @@
 PyFL593FL
 ==========
 
-Python/PyUSB interface to the FL593FL evaluation board for the TeamWavelength FL500 laser diode driver.
+Python/PyUSB interface to the ![FL593FL](http://www.teamwavelength.com/products/product.php?part=154)  evaluation board for the TeamWavelength ![FL500](http://www.teamwavelength.com/products/product.php?part=147) laser diode driver.
 
 <p align="center">
   <img
@@ -10,7 +10,7 @@ alt="PyQt4 client screenshot"/>
 </p>
 
 While in principle cross-platform, libusb was not able to interact with the FL593FL on Windows after
-some initial testing.
+some initial testing. But that is likely the authors fault.
 
 
 Installation
@@ -22,7 +22,13 @@ should do the job as the grimy details are thankfully hidden away.
 libusb
 ------
 
+Installing on distributions using apt goes something along the lines of:
+
     $ sudo apt-get install libusb-dev
+  
+Or for specifically installing libusb-1.0 at the time of writing:
+
+    $ sudo apt-get install libusb-1.0-0-dev
 
 PyUSB
 -----

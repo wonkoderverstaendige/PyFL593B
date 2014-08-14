@@ -3,7 +3,11 @@ PyFL593FL
 
 Python/PyUSB interface to the FL593FL evaluation board for the TeamWavelength FL500 laser diode driver.
 
-![PyQt4 client screenshot](docs/interface_client.png)
+<p align="center">
+  <img
+src="https://github.com/wonkoderverstaendige/PyFL593FL/blob/master/docs/interface_client.png?raw=true"
+alt="PyQt4 client screenshot"/>
+</p>
 
 While in principle cross-platform, libusb was not able to interact with the FL593FL on Windows after
 some initial testing.

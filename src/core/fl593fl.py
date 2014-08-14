@@ -451,9 +451,12 @@ class FL593FL(object):
         self.device.reset()
 
     def close(self):
+        # disable and zero channel controls
+        self.control.close()
         for key in self.channels:
             self.channels[key].close()
-        self.control.close()
+
+        # Sometimes the device got stuck, this MAY have solved it!
         self.device.reset()
         del self.device
 

@@ -44,6 +44,7 @@ class Main(QtGui.QMainWindow):
 
         self.stopwatch = QtCore.QElapsedTimer()
         self.stopwatch.start()
+        self.running = True  # to prevent GUI refresh during device shutdown
         self.gui_refresh_interval = 0
         self.elapsed = self.gui_refresh_interval if self.gui_refresh_interval > 0 else 30
         QtCore.QTimer.singleShot(0, self.initialize)  # fires when event loop starts
@@ -71,6 +72,8 @@ class Main(QtGui.QMainWindow):
 
     def refresh(self):
         """Main loop processing/updating."""
+        if not self.running:
+            return
 
         # update rate display (smoothed)
         self.elapsed = 0.8*self.elapsed + 0.2*self.stopwatch.restart()
@@ -104,6 +107,7 @@ class Main(QtGui.QMainWindow):
             reply = QtGui.QMessageBox.question(self, 'Exiting...', 'Are you sure?',
                                                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
+            self.running = False
             if self.device is not None:
                 self.device.close()
             event.accept()

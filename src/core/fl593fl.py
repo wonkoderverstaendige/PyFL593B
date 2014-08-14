@@ -496,6 +496,6 @@ if __name__ == '__main__':
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     dev = FL593FL()
-    print repr(dev.model)
-    print repr(dev.fwver)
+    print 'Model:', dev.model
+    print 'Firmware:', dev.fwver
     dev.close()

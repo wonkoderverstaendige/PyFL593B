@@ -8,10 +8,10 @@ Created on 4/8/14 2:14 PM 2013
 
 import logging
 from PyQt4 import QtGui, QtCore
-from ui import ChannelUi
+from ui import ChannelWidgetUi
 
 
-class ChannelWidget(QtGui.QWidget, ChannelUi.Ui_Channel):
+class ChannelWidget(QtGui.QWidget, ChannelWidgetUi.Ui_Channel):
     """GUI representation of a single controlled channel. Provides UI elements to
     display (and control, where applicable) values, limits and setpoints for
     applied current/light power.

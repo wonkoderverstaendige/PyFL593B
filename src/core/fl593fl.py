@@ -280,10 +280,7 @@ class Device(object):
     def __init__(self):
         self.log = logging.getLogger(__name__)
 
-    def attach(self):
-        pass
-
-    def initialize(self):
+    def open(self, *args, **kwargs):
         pass
 
     def update(self):
@@ -299,13 +296,10 @@ class Device(object):
         pass
 
 
-class FL593FL(object):
+class FL593FL_USB(Device):
     def __init__(self, config=1):
-        self.log = logging.getLogger(__name__)
-
-        # attach to device with configuration (default: 1)
-        self.device = None
-        self.attach(config)
+        super(FL593FL_USB, self).__init__()
+        self.device = self.open(config)
         assert self.device is not None
 
         # configuration
@@ -319,32 +313,26 @@ class FL593FL(object):
         self.len_receive = self.endpoint_in.wMaxPacketSize
         self.len_transmit = self.endpoint_out.wMaxPacketSize
 
-        self.channels = {}
-        self.control = None
-
-        # assuming that everything went according to plan, we can now say hello to the device
-        self.initialize()
-
-    def attach(self, configuration, idVendor=VENDOR_ID, idProduct=PRODUCT_ID):
+    def open(self, configuration, idVendor=VENDOR_ID, idProduct=PRODUCT_ID):
         """Find and attach to the USB device with given vendorID and productID.
         Overly general, as right now there is only one such combination I know of.
         But why not make it neat?
         """
         try:
             self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(idVendor, idProduct))
-            self.device = usb.core.find(idVendor=idVendor, idProduct=idProduct)
+            device = usb.core.find(idVendor=idVendor, idProduct=idProduct)
         except usb.core.USBError as error:
             raise error
         # TODO: search for a particular name
-        if self.device is None:
+        if device is None:
             raise ValueError('Device not found')
         self.log.info('Device attached.')
-        self.log.debug('Attached device %s', self.device)
+        self.log.debug('Attached device %s', device)
 
         # May  be unnecessary, as this is not an HID
         try:
             self.log.debug('Attempting to detach kernel driver...')
-            self.device.detach_kernel_driver(0)
+            device.detach_kernel_driver(0)
             self.log.debug('Kernel driver detached.')
         except BaseException as error:
             print error
@@ -354,15 +342,52 @@ class FL593FL(object):
         self.show_configurations()
         try:
             self.log.debug('Setting device configuration {0}'.format(1))
-            self.device.set_configuration(configuration)
+            device.set_configuration(configuration)
         except usb.core.USBError as error:
             raise error
         except BaseException as error:
             raise error
 
         self.log.debug('Device attachment complete.')
+        return device
+
+    def show_configurations(self):
+        """Print/log all available configurations
+
+        Pretty useless, always returns 1. :D
+        """
+        for c, cfg in enumerate(self.device):
+            self.log.debug('Configuration %d: %s' % (c, str(cfg.bConfigurationValue)))
+
+    def show_interfaces(self):
+        """Print/log all available interfaces."""
+        for i, interface in enumerate(self.config):
+            self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
+
+    def show_endpoints(self):
+        """Print/log all available endpoints. Not sure this is actually a thing..."""
+        # FIXME: Copy'n'paste without change from interfaces... lookup endpoint enumeration!
+        for i, interface in enumerate(self.config):
+            self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
+
+
+class FL593FL(object):
+    def __init__(self, config=1):
+        self.log = logging.getLogger(__name__)
+
+        # attach to device with configuration (default: 1)
+        self.device = FL593FL_USB(config)
+        if self.device is None:
+            return
+        else:
+            self.channels = {}
+            self.control = None
+
+            # assuming that everything went according to plan, we can now say hello to the device
+            self.initialize()
 
     def initialize(self):
+        """Set up control and laser channels once device is ready for communication."""
         self.log.debug('Initializing device...')
         # The general control and device status channel
         self.control = ControlChannel(self)
@@ -381,7 +406,7 @@ class FL593FL(object):
             channel.update()
 
     def transceive(self, cmd_packet):
-        """This method was aptly named by Tim Schroeder, as is generously provided for by cookies of the same.
+        """This method was aptly named by Tim Schroeder, and is generously provided for with cookies by the same.
 
         For more information on the adopt-a-method program, please contact the author.
         """
@@ -404,28 +429,6 @@ class FL593FL(object):
             return None
 
         return resp_packet
-
-    def show_configurations(self):
-        """Print/log all available configurations
-
-        Pretty useless, always returns 1. :D
-        """
-        for c, cfg in enumerate(self.device):
-            self.log.debug('Configuration %d: %s' % (c, str(cfg.bConfigurationValue)))
-
-    def show_interfaces(self):
-        """Print/log all available interfaces."""
-        for i, interface in enumerate(self.config):
-            self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
-
-    def show_endpoints(self):
-        """Print/log all available endpoints
-
-        Not sure this is actually a thing...
-        """
-        # FIXME: Copy'n'paste without change from interfaces... lookup endpoint enumeration!
-        for i, interface in enumerate(self.config):
-            self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
 
     def show_packet(self, packet):
         """Show formatted packet content. Rather useful for debugging."""

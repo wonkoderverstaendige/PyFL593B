@@ -25,11 +25,11 @@ class LaserChannel(object):
     _imon = None
     _pmon = None
 
-    def __init__(self, parent, name=None, chan_num=0):
+    def __init__(self, parent, name=None, channel_number=0):
         self.log = logging.getLogger(__name__)
         self.name = name if name is not None else 'Unknown'
         self.parent = parent
-        self.id = chan_num
+        self.id = channel_number
 
         self.cmd = [('read_imon', TYPE_READ, CMD_IMON),
                     ('read_pmon', TYPE_READ, CMD_PMON),
@@ -276,6 +276,29 @@ class ControlChannel(object):
             self.remote_enable = False
 
 
+class Device(object):
+    def __init__(self):
+        pass
+
+    def attach(self):
+        pass
+
+    def initialize(self):
+        pass
+
+    def update(self):
+        pass
+
+    def transceive(self):
+        pass
+
+    def reset(self):
+        pass
+
+    def close(self):
+        pass
+
+
 class FL593FL(object):
     def __init__(self, config=None):
         self.log = logging.getLogger(__name__)
@@ -349,7 +372,7 @@ class FL593FL(object):
 
         # The laser driver channels
         if self.control.channel_count is not None:
-            self.channels = {n: LaserChannel(parent=self, chan_num=n) for n in range(1, self.control.channel_count+1)}
+            self.channels = {n: LaserChannel(parent=self, channel_number=n) for n in range(1, self.control.channel_count+1)}
 
         self.log.debug('... done.')
 
@@ -462,13 +485,17 @@ class FL593FL(object):
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # CLI
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--DEBUG', action='store_true', help='Print more!')
+
+    cli_args = parser.parse_args()
+
+    log_level = logging.DEBUG if cli_args.DEBUG else logging.INFO
+    logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
     dev = FL593FL()
     print repr(dev.model)
     print repr(dev.fwver)
-    dev.remote_enable = False
-
-    # run REPL here
-
-    # DO MAGIC!
+    dev.close()

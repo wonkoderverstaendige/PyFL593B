@@ -7,6 +7,9 @@ Created on 4/8/14 2:14 PM 2013
 """
 
 import sys
+if sys.hexversion > 0x03000000:
+    raise EnvironmentError('Python 3 not supported.')
+
 import logging
 from PyQt4 import QtGui, QtCore
 from ui import MainWindowUi

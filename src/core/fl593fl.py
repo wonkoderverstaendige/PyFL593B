@@ -278,7 +278,7 @@ class ControlChannel(object):
 
 class Device(object):
     def __init__(self):
-        pass
+        self.log = logging.getLogger(__name__)
 
     def attach(self):
         pass
@@ -300,11 +300,10 @@ class Device(object):
 
 
 class FL593FL(object):
-    def __init__(self, config=None):
+    def __init__(self, config=1):
         self.log = logging.getLogger(__name__)
-        config = config if config is not None else 1
 
-        # device
+        # attach to device with configuration (default: 1)
         self.device = None
         self.attach(config)
         assert self.device is not None
@@ -326,14 +325,14 @@ class FL593FL(object):
         # assuming that everything went according to plan, we can now say hello to the device
         self.initialize()
 
-    def attach(self, configuration, vendorId=VENDOR_ID, productID=PRODUCT_ID):
+    def attach(self, configuration, idVendor=VENDOR_ID, idProduct=PRODUCT_ID):
         """Find and attach to the USB device with given vendorID and productID.
         Overly general, as right now there is only one such combination I know of.
         But why not make it neat?
         """
         try:
-            self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(vendorId, productID))
-            self.device = usb.core.find(idVendor=vendorId, idProduct=productID)
+            self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(idVendor, idProduct))
+            self.device = usb.core.find(idVendor=idVendor, idProduct=idProduct)
         except usb.core.USBError as error:
             raise error
         # TODO: search for a particular name

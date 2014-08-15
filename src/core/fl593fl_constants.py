@@ -39,7 +39,7 @@ ERR_SAFETY = 0x08  # requested op not within safety specs of config
 ERR_CALMODE = 0x09  # requested op only available in calibration mode!
 
 # Channels
-NUM_CHAN = 2  # (0: device, 1: channel 1, 2: channel 2)
+MAX_NUM_CHAN = 2  # (0: device, 1: channel 1, 2: channel 2)
 
 # OpTypes
 TYPE_READ = 0x01  # return OpCode quantity to host

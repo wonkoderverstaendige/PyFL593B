@@ -23,11 +23,12 @@ NO_EXIT_CONFIRMATION = False
 
 
 class Main(QtGui.QMainWindow):
-    _device_ref = None
 
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, app, device_interface='usb', *args, **kwargs):
         QtGui.QMainWindow.__init__(self)
         self.log = logging.getLogger(__name__)
+        self.fl593fl = None
+        self.device_interface = device_interface
         self.app = app
         self.ui = MainWindowUi.Ui_MainWindow()
         self.ui.setupUi(self)
@@ -51,18 +52,14 @@ class Main(QtGui.QMainWindow):
 
     def initialize(self):
         """Set up device and representations once UI was initiated."""
-        self.log.debug("Initializing...")
+        self.log.debug("Initializing core fl593fl device interface...")
 
-        if self._device_ref is None:
-            try:
-                self._device_ref = FL593FL()
-            except Exception, e:
-                raise e
-        assert self.device is not None
+        self.fl593fl = FL593FL(self.device_interface)
+        assert self.fl593fl is not None
 
         # add channels/initialize widgets now that we have a working connection
         self.status_widget.initialize()
-        self.channel_widgets = [ChannelWidget(self, n+1) for n in range(self.device.channel_count)]
+        self.channel_widgets = [ChannelWidget(self, n+1) for n in range(self.fl593fl.num_channels)]
         for widget in self.channel_widgets:
             self.ui.layout_channels.addWidget(widget)
             widget.initialize(self.device.channels[widget.num_channel])
@@ -72,7 +69,7 @@ class Main(QtGui.QMainWindow):
 
     def refresh(self):
         """Main loop processing/updating."""
-        if not self.running:
+        if not self.running or self.fl593fl is None:
             return
 
         # update rate display (smoothed)
@@ -80,7 +77,7 @@ class Main(QtGui.QMainWindow):
         self.status_widget.set_fps(self.elapsed)
 
         # have the device update itself fully
-        self.device.update()
+        self.fl593fl.update()
 
         # Refresh widgets
         self.status_widget.refresh()
@@ -90,14 +87,19 @@ class Main(QtGui.QMainWindow):
         # start timer for next refresh
         QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
 
-    @property
-    def device(self):
-        """Getter for device handle."""
-        return self._device_ref
+    # @property
+    # def device(self):
+    #     """Getter for device handle."""
+    #     return self._device_ref
+    #
+    # @device.setter
+    # def device(self, device):
+    #     """Setter for device handle."""
+    #     self._device_ref = device
 
     def reset_device(self):
         """Reset device (bus). """
-        self.device.reset()
+        self.fl593fl.reset()
 
     def closeEvent(self, event):
         """This party sucks. The moment I find my pants I'm out of here!"""
@@ -108,8 +110,8 @@ class Main(QtGui.QMainWindow):
                                                QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             self.running = False
-            if self.device is not None:
-                self.device.close()
+            if self.fl593fl is not None:
+                self.fl593fl.close()
             event.accept()
         else:
             event.ignore()
@@ -135,14 +137,20 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog='PyFL593FL Qt GUI')
     parser.add_argument('-d', '--DEBUG', action='store_true', 
                         help='Debug mode. Actually, only disables exit confirmation.')
+    parser.add_argument('--DUMMY', action='store_true', help='Initiate with dummy device interface sending \
+                        random values. Useful for GUI debugging or when user forgot device in the workshop.')
     parser.add_argument('--version', action='version', version='%(prog)s {version}'.format(version=__version__))
     cli_args = parser.parse_args()
 
     if cli_args.DEBUG:
         NO_EXIT_CONFIRMATION = True 
         LOG_LEVEL = logging.DEBUG
-
     logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
+    if cli_args.DUMMY:
+        dev_interface = 'dummy'
+    else:
+        dev_interface = 'usb'
+
     # Let's roll
-    main()
+    main(device_interface=dev_interface)

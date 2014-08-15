@@ -10,6 +10,10 @@ import logging
 from fl593fl_constants import *
 
 
+def from_string(string):
+    return Packet()
+
+
 class Packet(object):
     """Represents a USB data packet in the TeamWavelength protocol.
 

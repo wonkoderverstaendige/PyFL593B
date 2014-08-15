@@ -9,426 +9,43 @@ FL593FL evaluation board USB interface class
 
 import sys
 import logging
-import usb.core
-import usb.util
-from fl593fl_constants import *
-from Packets import CommandPacket, ResponsePacket
+import Devices
+from Channels import StatusChannel, LaserChannel
 
 if sys.hexversion > 0x03000000:
     raise EnvironmentError('Python 3 not supported.')
 
 
-class LaserChannel(object):
-    _mode = None
-    _max = None
-    _set = None
-    _imon = None
-    _pmon = None
-
-    def __init__(self, parent, name=None, channel_number=0):
-        self.log = logging.getLogger(__name__)
-        self.name = name if name is not None else 'Unknown'
-        self.parent = parent
-        self.id = channel_number
-
-        self.cmd = [('read_imon', TYPE_READ, CMD_IMON),
-                    ('read_pmon', TYPE_READ, CMD_PMON),
-                    #
-                    ('read_limit', TYPE_READ, CMD_LIMIT),
-                    ('write_limit', TYPE_WRITE, CMD_LIMIT),
-                    ('min_limit', TYPE_MIN, CMD_LIMIT),
-                    ('max_limit', TYPE_MAX, CMD_LIMIT),
-                    #
-                    ('read_set', TYPE_READ, CMD_SETPOINT),
-                    ('write_set', TYPE_WRITE, CMD_SETPOINT),
-                    ('min_set', TYPE_MIN, CMD_SETPOINT),
-                    ('max_set', TYPE_MAX, CMD_SETPOINT),
-                    #
-                    ('read_mode', TYPE_READ, CMD_MODE),
-                    ('write_mode', TYPE_WRITE, CMD_MODE)]
-
-        # pre-built packages that don't need extra data
-        self.log.debug('Building laser channel {0:d} packet dictionary'.format(self.id))
-        self.packets = {p[0]: CommandPacket(channel=self.id, op_type=p[1], op_code=p[2])
-                        for p in self.cmd if p[1] in [TYPE_READ, TYPE_MIN, TYPE_MAX]}
-
-    def initialize(self):
-        """First things to do once device is ready to talk to."""
-        self.log.debug('Initializing laser channel {0:d}'.format(self.id))
-        self.zero(AUTO_START_ZERO_LIMIT, AUTO_START_ZERO_SET)
-
-    def zero(self, zero_limit, zero_setpoint):
-        if zero_limit:
-            self.log.debug('Zero limit Channel {0:d}'.format(self.id))
-            self.set_limit(0.0)
-        if zero_setpoint:
-            self.log.debug('Zero setpoint Channel {0:d}'.format(self.id))
-            self.set_setpoint(0.0)
-
-    def update(self):
-        """Update attached properties"""
-        self.log.debug('Updating laser channel {0:d}'.format(self.id))
-        # update mode
-        rp = self.parent.transceive(self.packets['read_mode'])
-        if rp is not None:
-            self._mode = bool(rp.data_str)
-
-        # update imon
-        rp = self.parent.transceive(self.packets['read_imon'])
-        if rp is not None:
-            self._imon = float(rp.data_str)
-
-        # update pmon
-        rp = self.parent.transceive(self.packets['read_pmon'])
-        if rp is not None:
-            self._pmon = float(rp.data_str)
-
-        # update limit
-        rp = self.parent.transceive(self.packets['read_limit'])
-        if rp is not None:
-            self._max = float(rp.data_str)
-
-        # update setpoint
-        rp = self.parent.transceive(self.packets['read_set'])
-        if rp is not None:
-            self._set = float(rp.data_str)
-
-        # show limit
-        # rp = self.parent.transceive(self.packets['max_limit'])
-        # if rp is not None:
-        #     print rp.data_str
-
-    @property
-    def mode(self):
-        return self._mode
-
-    @property
-    def imon(self):
-        return self._imon*1000.
-
-    @property
-    def pmon(self):
-        return self._pmon*1000.
-
-    @property
-    def max(self):
-        return self._max*1000.
-
-    @max.setter
-    def max(self, value):
-        self.set_limit(value)
-
-    def set_limit(self, value):
-        packet = CommandPacket(channel=self.id,
-                               op_type=TYPE_WRITE,
-                               op_code=CMD_LIMIT,
-                               data=[ord(c) for c in str(float(value))])
-        rp = self.parent.transceive(packet)
-
-    @property
-    def setpoint(self):
-        return self._set*1000.
-
-    @setpoint.setter
-    def setpoint(self, value):
-        # FIXME: Doesn't work! Always tries to retrieve value and then call it?! WTF!
-        self.set_setpoint(value)
-
-    def set_setpoint(self, value):
-        # FIXME: For some reason I can't use the setpoint.setter decorator!
-        packet = CommandPacket(channel=self.id,
-                               op_type=TYPE_WRITE,
-                               op_code=CMD_SETPOINT,
-                               data=[ord(c) for c in str(float(value))])
-        rp = self.parent.transceive(packet)
-
-    def close(self):
-        self.zero(AUTO_EXIT_ZERO_LIMIT, AUTO_EXIT_ZERO_SET)
-
-
-class ControlChannel(object):
-    _track = None
-    _model = None
-    _serial = None
-    _fwver = None
-    _devtype = None
-    _channel_count = None
-    _identify = None
-    _enable = None
-
-    _output_enabled = None
-    _remote_enabled = None
-    _external_enabled = None
-
-    def __init__(self, parent, chan_num=0):
-        self.log = logging.getLogger(__name__)
-        self.parent = parent
-        self.id = chan_num
-
-        self.cmd = [('read_model', TYPE_READ, CMD_MODEL),
-                    ('read_serial', TYPE_READ, CMD_SERIAL),
-                    ('read_fwver', TYPE_READ, CMD_FWVER),
-                    ('read_devtype', TYPE_READ, CMD_DEVTYPE),
-                    ('read_chanct', TYPE_READ, CMD_CHANCT),
-                    ('read_alarm', TYPE_READ, CMD_ALARM),
-                    ('read_enable', TYPE_READ, CMD_ENABLE)]
-
-        # pre-built packages that don't need extra
-        self.log.debug('Building control channel packet dictionary')
-        self.packets = {p[0]: CommandPacket(channel=self.id, op_type=p[1], op_code=p[2])
-                        for p in self.cmd if p[1] in [TYPE_READ, TYPE_MIN, TYPE_MAX]}
-
-        self.alarms = {n: False for n in range(10)}
-
-    def initialize(self):
-        self.log.debug('Initializing control channel')
-
-        # update model and loop to avoid initial troubles in communication (device boots?)
-        # FIXME: Pause for 200-300 ms or so before starting communication
-        for n in range(10):
-            rp = self.parent.transceive(self.packets['read_model'])
-            if not rp:
-                self.log.error("Failed conversation attempt {0:d}".format(n))
-            else:
-                self._model = rp.data_str
-
-        if AUTO_START_DISABLE_REMOTE:
-            self.log.debug('Disabling remote enable on startup')
-            self.remote_enable = False
-
-        # update firmware version
-        rp = self.parent.transceive(self.packets['read_fwver'])
-        if rp is not None:
-            self._fwver = '{0:.2f}'.format(float(rp.data_str))
-
-        # update serial number
-        rp = self.parent.transceive(self.packets['read_serial'])
-        if rp is not None:
-            self._serial = rp.data_str
-
-        # update device type
-        rp = self.parent.transceive(self.packets['read_devtype'])
-        if rp is not None:
-            self._devtype = rp.data_str
-
-        # update number of available channels
-        rp = self.parent.transceive(self.packets['read_chanct'])
-        if rp is not None:
-            self._channel_count = int(rp.data_str)
-        self.log.debug('Control channel initialized!')
-
-    def update(self):
-        """Update attached properties"""
-        self.log.debug('Updating control channel')
-        self.update_alarms()
-
-    def update_alarms(self):
-        """Update alarm flags"""
-        self.log.debug('Updating control channel alarms')
-        rp = self.parent.transceive(self.packets['read_alarm'])
-        if rp is not None:
-            self.alarms = {n: rp.data[n] == FLAG_ON for n in range(10)}
-
-    @property
-    def channel_count(self):
-        return self._channel_count if self._channel_count is not None else 0
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def fwver(self):
-        return self._fwver
-
-    @property
-    def serial(self):
-        return self._serial
-
-    @property
-    def output_enable(self):
-        """Output enabled when all three enable conditions are met:
-        XEN, LEN, REN must be true.
-        """
-        return self.alarms[0]
-
-    @property
-    def external_enable(self):
-        return self.alarms[1]
-
-    @property
-    def local_enable(self):
-        return self.alarms[2]
-
-    @property
-    def remote_enable(self):
-        return self.alarms[3]
-
-    @remote_enable.setter
-    def remote_enable(self, state):
-        rp = self.parent.transceive(CommandPacket(op_type=TYPE_WRITE, op_code=CMD_ENABLE,
-                                                  data=[FLAG_ON if state else FLAG_OFF]))
-
-    def close(self):
-        # When exiting, disable the remote enable flag to reduce risk of accidental pew pew!
-        if AUTO_EXIT_DISABLE_REMOTE:
-            self.log.debug('Disabling remote enable on exit')
-            self.remote_enable = False
-
-
-class Device(object):
-    def __init__(self):
-        self.log = logging.getLogger(__name__)
-
-    def open(self, *args, **kwargs):
-        pass
-
-    def update(self):
-        pass
-
-    def transceive(self):
-        pass
-
-    def reset(self):
-        pass
-
-    def close(self):
-        pass
-
-
-class FL593FL_USB(Device):
-    def __init__(self, config=1):
-        super(FL593FL_USB, self).__init__()
-        self.device = self.open(config)
-        assert self.device is not None
-
-        # configuration
-        self.config = self.device.get_active_configuration()
-
-        # interface
-        self.interface = self.config[0, 0]
-
-        # endpoints
-        self.endpoint_out, self.endpoint_in = usb.util.find_descriptor(self.interface, find_all=True)
-        self.len_receive = self.endpoint_in.wMaxPacketSize
-        self.len_transmit = self.endpoint_out.wMaxPacketSize
-
-    def open(self, configuration, idVendor=VENDOR_ID, idProduct=PRODUCT_ID):
-        """Find and attach to the USB device with given vendorID and productID.
-        Overly general, as right now there is only one such combination I know of.
-        But why not make it neat?
-        """
-        try:
-            self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(idVendor, idProduct))
-            device = usb.core.find(idVendor=idVendor, idProduct=idProduct)
-        except usb.core.USBError as error:
-            raise error
-        # TODO: search for a particular name
-        if device is None:
-            raise ValueError('Device not found')
-        self.log.info('Device attached.')
-        self.log.debug('Attached device %s', device)
-
-        # May  be unnecessary, as this is not an HID
-        try:
-            self.log.debug('Attempting to detach kernel driver...')
-            device.detach_kernel_driver(0)
-            self.log.debug('Kernel driver detached.')
-        except BaseException as error:
-            print error
-            # this usually mean that kernel driver had not been attached to being with.
-            self.log.debug('Kernel driver detachment failed. No worries.')
-
-        self.show_configurations()
-        try:
-            self.log.debug('Setting device configuration {0}'.format(1))
-            device.set_configuration(configuration)
-        except usb.core.USBError as error:
-            raise error
-        except BaseException as error:
-            raise error
-
-        self.log.debug('Device attachment complete.')
-        return device
-
-    def show_configurations(self):
-        """Print/log all available configurations
-
-        Pretty useless, always returns 1. :D
-        """
-        for c, cfg in enumerate(self.device):
-            self.log.debug('Configuration %d: %s' % (c, str(cfg.bConfigurationValue)))
-
-    def show_interfaces(self):
-        """Print/log all available interfaces."""
-        for i, interface in enumerate(self.config):
-            self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
-
-    def show_endpoints(self):
-        """Print/log all available endpoints. Not sure this is actually a thing..."""
-        # FIXME: Copy'n'paste without change from interfaces... lookup endpoint enumeration!
-        for i, interface in enumerate(self.config):
-            self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
-
-
 class FL593FL(object):
-    def __init__(self, config=1):
+    def __init__(self, device_interface, config=1):
         self.log = logging.getLogger(__name__)
 
         # attach to device with configuration (default: 1)
-        self.device = FL593FL_USB(config)
-        if self.device is None:
-            return
+        if device_interface == 'usb':
+            self.device = Devices.FL593FL_USB(config)
+        elif device_interface == 'dummy':
+            self.device = Devices.FL593FL_Dummy()
+        elif device_interface == 'zmq':
+            self.device = Devices.FL593FL_Socket('socket:port')
         else:
-            self.channels = {}
-            self.control = None
+            raise NotImplementedError
+        assert self.device is not None
 
-            # assuming that everything went according to plan, we can now say hello to the device
-            self.initialize()
+        self.status = None
 
-    def initialize(self):
-        """Set up control and laser channels once device is ready for communication."""
-        self.log.debug('Initializing device...')
-        # The general control and device status channel
-        self.control = ControlChannel(self)
-        assert self.control is not None
-        self.control.initialize()
+        self.log.debug('Initializing device proxy channels...')
 
-        # The laser driver channels
-        if self.control.channel_count is not None:
-            self.channels = {n: LaserChannel(parent=self, channel_number=n) for n in range(1, self.control.channel_count+1)}
-
-        self.log.debug('... done.')
+        # The general control/status channel and diode driver channels
+        self.channels = {n: LaserChannel(channel_number=n) if n else StatusChannel(self)
+                         for n in range(self.device.num_channels+1)}  # +1 for status channel (channel 0)
+        self.status = self.channels[0]
+        self.status.initialize(self.device)
+        self.log.debug('Device proxy channels initiated.')
 
     def update(self):
-        self.control.update()
-        for n, channel in self.channels.items():
+        """Ask the channels to ask the device to grab the respective current states."""
+        for channel in self.channels.values():
             channel.update()
-
-    def transceive(self, cmd_packet):
-        """This method was aptly named by Tim Schroeder, and is generously provided for with cookies by the same.
-
-        For more information on the adopt-a-method program, please contact the author.
-        """
-        # Write command packet
-        try:
-            #self.show_packet(cmd_packet)
-            bw = self.endpoint_out.write(cmd_packet.packet)
-            #self.log.debug('{0:d} bytes written: {1:s}'.format(bw, str(cmd_packet)))
-        except usb.USBError as error:
-            self.log.error("Could not write! {:s}".format(error))
-            return None
-
-        # Read back result
-        try:
-            resp_packet = ResponsePacket(self.endpoint_in.read(self.endpoint_in.wMaxPacketSize, TIMEOUT))
-            #self.log.debug('{0:d} bytes received: {1:s}'.format(len(resp_packet), str(resp_packet)))
-            #self.show_packet(resp_packet)
-        except usb.USBError as error:
-            self.log.error("Could not receive response! {:s}".format(error))
-            return None
-
-        return resp_packet
 
     def show_packet(self, packet):
         """Show formatted packet content. Rather useful for debugging."""
@@ -437,47 +54,40 @@ class FL593FL(object):
 
     def show_alarms(self):
         """Output current state of alarm flag(s)."""
-        # TODO: Optionally specify flags.
-        # TODO: Optionally hand packet from which to extract flags.
-        self.log.info('Alarm flag states:')
-        for key, item in self.control.alarms.items():
-            flag = 'ON' if item == FLAG_ON else 'OFF'
-            self.log.info('{0:<20s}: {1:s}\n'.format(ALARM_FLAG_DICT[key], flag))
-
-    @property
-    def is_ready(self):
-        return False
+        self.status.show_alarms()
 
     @property
     def model(self):
         self.log.debug('Model description:')
-        return self.control.model
+        return self.status.model
 
     @property
     def fwver(self):
         self.log.debug('Firmware version:')
-        return self.control.fwver
+        return self.status.fwver
 
     @property
-    def channel_count(self):
+    def num_channels(self):
         self.log.debug('Channel count:')
-        return self.control.channel_count
+        return self.status.num_channels
 
     @property
     def serial(self):
         self.log.debug('Serial number:')
-        return self.control.serial
+        return self.status.serial
 
     def reset(self):
-        """Reset USB bus. or something like that. Seems to fix problems where device becomes
-        unresponsive, especially when previous interaction failed or was disrupted mid-transfer,
-        leaving packets floating around in buffers.
+        """Reset whole device.
+
+        Seems to fix problems where USB device becomes unresponsive, especially
+        when previous interaction failed or was disrupted mid-transfer,leaving packets
+        floating around in buffers.
         """
         self.device.reset()
 
     def close(self):
         # disable and zero channel controls
-        self.control.close()
+        self.status.close()
         for key in self.channels:
             self.channels[key].close()
 
@@ -491,13 +101,15 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--DEBUG', action='store_true', help='Print more!')
-
+    parser.add_argument('--DUMMY', action='store_true', help='Initiate with dummy device interface sending \
+                        random values. Useful for GUI debugging or when user forgot device in the workshop.')
     cli_args = parser.parse_args()
 
     log_level = logging.DEBUG if cli_args.DEBUG else logging.INFO
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    dev = FL593FL()
+    dev = FL593FL(device_interface='dummy' if cli_args.DUMMY else 'usb')
     print 'Model:', dev.model
     print 'Firmware:', dev.fwver
+    dev.show_alarms()
     dev.close()

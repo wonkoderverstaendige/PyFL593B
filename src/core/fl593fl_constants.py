@@ -8,22 +8,25 @@ Constants used by the FL593FL device class.
 
 # DEVICE BEHAVIOR
 TIMEOUT = 100  # default timeout of read/write is 1000 ms
-AUTO_EXIT_ZERO_SET = True  # For safety reasons, try to disable
-AUTO_EXIT_ZERO_LIMIT = True  # For safety reasons, try to zero
-AUTO_EXIT_DISABLE_REMOTE = True  # For safety reasons, try to zero
 
 AUTO_START_ZERO_SET = True  # For safety reasons, try to disable
 AUTO_START_ZERO_LIMIT = True  # For safety reasons, try to zero
-AUTO_START_DISABLE_REMOTE = True  # For safety reasons, try to zero
+START_REMOTE_ENABLE_STATE = False  # Set to state on startup
+
+AUTO_EXIT_ZERO_SET = True  # For safety reasons, try to disable
+AUTO_EXIT_ZERO_LIMIT = True  # For safety reasons, try to zero
+EXIT_REMOTE_ENABLE_STATE = False  # For safety reasons, disable on exit
 
 # DEVICE CONSTANTS
 VENDOR_ID = 0x1a45
 PRODUCT_ID = 0x2001
+DEVICE_TYPE = 0x0
 CONFIGURATION = 1
+MAX_CONN_RETRIES = 10
 EP_ADDR_OUT = 0x01
-EP_PACK_OUT = 20
+EP_PACK_OUT = 20  # length bytes to send
 EP_ADDR_IN = 0x82
-EP_PACK_IN = 21
+EP_PACK_IN = 21  # length bytes returned
 
 # WEISUB protocol constants
 # end codes
@@ -37,15 +40,36 @@ ERR_BUSY = 0x06  # device currently busy, has not performed requested op
 ERR_DATA = 0x07  # data field content invalid for op_code
 ERR_SAFETY = 0x08  # requested op not within safety specs of config
 ERR_CALMODE = 0x09  # requested op only available in calibration mode!
+ERROR_DICT = {
+    ERR_OK: "OK",
+    ERR_DEVTYPE: "Incorrect device type",
+    ERR_CHANNEL: "Channel number out of range",
+    ERR_OPTYPE: "Op-type not supported",
+    ERR_NOTIMPL: "Op-code not implemented",
+    ERR_PENDING: "Pending, command received but data was ignored",
+    ERR_BUSY: "Device busy, operation not performed",
+    ERR_DATA: "Data field content invalid for op_code",
+    ERR_SAFETY: "Requested operation not within safety specs",
+    ERR_CALMODE: "Operation only available in calibration mode"}
 
 # Channels
 MAX_NUM_CHAN = 2  # (0: device, 1: channel 1, 2: channel 2)
+CHAN_STATUS = 0x0
+CHAN_LD1 = 0x1
+CHAN_LD2 = 0x2
 
 # OpTypes
 TYPE_READ = 0x01  # return OpCode quantity to host
 TYPE_WRITE = 0x02  # write OpCode  quantity to device
 TYPE_MIN = 0x03  # return minimum of OpCode quantity to host
 TYPE_MAX = 0x04  # return maximum of OpCode quantity to host
+OP_TYPE_DICT = {
+    TYPE_READ: "READ",
+    TYPE_WRITE: "WRITE",
+    TYPE_MIN: "MIN",
+    TYPE_MAX: "MAX"
+}
+OP_TYPE_DICT_REV = {v: k for v, k in OP_TYPE_DICT.iteritems()}
 
 # General OpCodes
 # r = read, w = write
@@ -59,7 +83,6 @@ CMD_SAVE = 0x0C  # w
 CMD_RECALL = 0x0D  # w
 CMD_PASSWD = 0x0E  # rw
 CMD_REVERT = 0x0F  # w
-
 # Specific OpCodes (codes > 0x10 device specific)
 # r = read, w = write, mm = min/max
 CMD_ALARM = 0x10  # r, Alarm flags
@@ -74,18 +97,31 @@ CMD_ENABLE = 0x17  # rw, output enable. Additionally requires the output enable 
 CMD_RPD = 0x19  # rwm, kOhm, photodiode feedback resistor for specified channel
 CMD_CAL_ISCALE = 0xE2  # rw, current monitor calibration scaling value for selected channel
 
+
 # ALARM FLAGS
-ALARM_FLAG_DICT = {0x00: 'OUT',  # output status. 0: off, 1: on; equals XEN*LEN*REN
-                   0x01: 'XEN',  # external enable flag, 0: J102 floating or HIGH, 1: LOW
-                   0x02: 'LEN',  # local enable flag, 0: S100 enabled, 0: disabled
-                   0x03: 'REN',  # remote enable flag, enable command state
-                   0x04: 'MODE1',  # feedback more channel 1, 0: CC, 1: CP
-                   0x05: 'MODE2',  # feedback more channel 1, 0: CC, 1: CP
-                   0x06: 'PARA',  # parallel mode, state of track command, 0: independently
-                   0x07: 'IDENT',  # status identify flag, 0: inactive, 1: active
-                   0x08: 'WRITE',  # write to non-volatile memory in progress following SAVE
-                   0x09: 'CALMODE'}  # 1: device is in calibration mode, entered with PASSWD,
-                                  # and left with REVERT
+NUM_ALARMS = 10
+ALARM_OUT = 0x00  # output status. 0: off, 1: on; equals XEN*LEN*REN
+ALARM_XEN = 0x01  # external enable flag, 0: J102 floating or HIGH, 1: LOW
+ALARM_LEN = 0x02  # local enable flag, 0: S100 enabled, 0: disabled
+ALARM_REN = 0x03  # remote enable flag, enable command state
+ALARM_MODE1 = 0x04  # feedback mode channel 1, 0: CC, 1: CP
+ALARM_MODE2 = 0x05  # feedback mode channel 2, 0: CC, 1: CP
+ALARM_PARA = 0x06  # parallel mode, state of track command, 0: independently
+ALARM_IDENT = 0x07  # status identify flag, 0: inactive, 1: active
+ALARM_WRITE = 0x08  # write to non-volatile memory in progress following SAVE
+ALARM_CALMODE = 0x09  # 1: device is in calibration mode, entered with PASSWD and left with REVERT
+ALARM_FLAG_DICT = {
+    ALARM_OUT: 'OUT',
+    ALARM_XEN: 'XEN',
+    ALARM_LEN: 'LEN',
+    ALARM_REN: 'REN',
+    ALARM_MODE1: 'MODE1',
+    ALARM_MODE2: 'MODE2',
+    ALARM_PARA: 'PARA',
+    ALARM_IDENT: 'IDENT',
+    ALARM_WRITE: 'WRITE',
+    ALARM_CALMODE: 'CALMODE'}
+ALARM_FLAG_DICT_REV = {v: k for v, k in ALARM_FLAG_DICT.iteritems()}
 
 # DATA (data ignored for types read, min and max)
 LEN_DATA = 16  # length data field in bytes

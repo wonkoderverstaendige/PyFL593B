@@ -12,6 +12,7 @@ Dummy: Virtual device for debugging. Returns semi-random values
 """
 
 import logging
+from array import array
 from fl593fl_constants import *
 try:
     import usb
@@ -40,7 +41,10 @@ class Device(object):
         self.device = None
 
     def transceive(self, packet):
-        """Send a piece of data and return the response."""
+        """This method was aptly named by Tim Schroeder, and is generously provided for with cookies by the same.
+
+        For more information on the adopt-a-method program, please contact the author.
+        """
         return packet
 
     def reset(self):
@@ -53,19 +57,14 @@ class Device(object):
             self.device.close()
 
 
-class FL593FL_USB(Device):
+class USB(Device):
     def __init__(self, config=1, idVendor=VENDOR_ID, idProduct=PRODUCT_ID):
-        super(FL593FL_USB, self).__init__()
+        super(USB, self).__init__()
 
         # PyUSB must be available for this device interface
         if usb is None:
             raise ImportError('PyUSB not found.')
 
-    # def open(self, configuration):
-    #     """Find and attach to the USB device with given vendorID and productID.
-    #     Overly general, as right now there is only one such combination I know of.
-    #     But why not make it neat?
-    #     """
         try:
             self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(idVendor, idProduct))
             device = usb.core.find(idVendor=idVendor, idProduct=idProduct)
@@ -73,7 +72,7 @@ class FL593FL_USB(Device):
             raise error
         # TODO: search for a particular name
         if device is None:
-            raise ValueError('Device not found')
+            raise ValueError('USB device {0:x}:{1:x} not found'.format(idVendor, idProduct))
         self.log.info('Attached to USB device %s as FL593FL', device)
 
         # May  be unnecessary, as this is not an HID
@@ -82,9 +81,8 @@ class FL593FL_USB(Device):
             device.detach_kernel_driver(0)
             self.log.debug('Kernel driver detached.')
         except BaseException as error:
-            print error
             # this usually mean that kernel driver had not been attached to being with.
-            self.log.debug('Kernel driver detachment failed. No worries.')
+            self.log.debug('Kernel driver detachment failed with {}. No worries.'.format(error))
 
         try:
             self.log.debug('Setting device configuration: {}'.format(1))
@@ -127,14 +125,9 @@ class FL593FL_USB(Device):
         #     self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
 
     def transceive(self, cmd_packet):
-        """This method was aptly named by Tim Schroeder, and is generously provided for with cookies by the same.
-
-        For more information on the adopt-a-method program, please contact the author.
-        """
         # Write command packet
         try:
-            bw = self.endpoint_out.write(cmd_packet.packet)
-            #self.log.debug('{0:d} bytes written: {1:s}'.format(bw, str(cmd_packet)))
+            self.endpoint_out.write(cmd_packet.packet)
         except usb.USBError as error:
             self.log.error("Could not write to USB! {:s}".format(error))
             return None
@@ -142,8 +135,6 @@ class FL593FL_USB(Device):
         # Read back result
         try:
             resp_packet = ResponsePacket(self.endpoint_in.read(self.endpoint_in.wMaxPacketSize, TIMEOUT))
-            #self.log.debug('{0:d} bytes received: {1:s}'.format(len(resp_packet), str(resp_packet)))
-            #self.show_packet(resp_packet)
         except usb.USBError as error:
             self.log.error("Could not receive response! {:s}".format(error))
             return None
@@ -151,19 +142,70 @@ class FL593FL_USB(Device):
         return resp_packet
 
 
-class FL593FL_Dummy(Device):
+class Dummy(Device):
     """Dummy class to allow running the GUI without any device attached.
 
     Emulates the functionality of a USB or Network attached device.
     """
     def __init__(self):
-        super(FL593FL_Dummy, self).__init__()
+        super(Dummy, self).__init__()
+        self.array = array('B')
+        self.array.fromlist([0x00]*EP_PACK_OUT)
 
+    def transceive(self, cmd_packet):
+        self.log.debug(repr(cmd_packet))
+        return ResponsePacket(self.fake_data(cmd_packet))
 
-class FL593FL_Socket(Device):
+    def fake_data(self, packet):
+        if packet.op_type == TYPE_READ:
+            return self.array
+            # data_dict = {
+            #     CMD_MODEL: list('Dummy Device'),
+            #     CMD_FWVER: list('0.1'),
+            #     CMD_CHANCT: [2],
+            #     CMD_IMON: [100.0],
+            #     CMD_PMON: [50.0],
+            #     CMD_LIMIT: [123.0],
+            #     CMD_SETPOINT: [120.0],
+            #     CMD_MODE: [1],
+            #     CMD_ALARM: [FLAG_OFF]*8
+            # }
+            # pack_list = [DEVICE_TYPE,
+            #              packet.channel,
+            #              packet.op_type,
+            #              packet.op_code]
+            # pack_list.extend(data_dict[packet.op_code])
+            # self.array.fromlist(,
+            #                      ,
+            #                      packet.data])
+            # return self.array
+
+        if packet.op_type == TYPE_WRITE:
+            pack_list = [DEVICE_TYPE, packet.channel, packet.op_type, packet.op_code, ERR_OK]
+            pack_list.extend(packet.data)
+            self.array.fromlist(pack_list)
+            return self.array
+            # data_dict = {
+            #     CMD_LIMIT: 123.0,
+            #     CMD_SETPOINT: 120.0,
+            #     CMD_MODE: 1,
+            #     CMD_ALARM: [FLAG_OFF]*8,
+            #     CMD_ENABLE: FLAG_ON
+            # }
+            # pack_list = [DEVICE_TYPE,
+            #              packet.channel,
+            #              packet.op_type,
+            #              packet.op_code]
+            # pack_list.extend()
+            # self.array.fromlist()
+            # data_dict[packet.op_code],
+            #                      packet.data])
+            # return self.array
+
+class Socket(Device):
     """Allows control via sockets, e.g. over ethernet to a remote server."""
     def __init__(self, socket_location):
-        super(FL593FL_Socket, self).__init__()
+        super(Socket, self).__init__()
         if zmq is None:
             raise ImportError('ZMQ not found.')
 

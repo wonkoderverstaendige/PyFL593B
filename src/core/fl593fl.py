@@ -18,63 +18,47 @@ if sys.hexversion > 0x03000000:
 
 class FL593FL(object):
     def __init__(self, device_interface, config=1):
-        self.log = logging.getLogger(__name__)
-
-        # attach to device with configuration (default: 1)
-        if device_interface == 'usb':
-            self.device = Devices.FL593FL_USB(config)
-        elif device_interface == 'dummy':
-            self.device = Devices.FL593FL_Dummy()
-        elif device_interface == 'zmq':
-            self.device = Devices.FL593FL_Socket('socket:port')
-        else:
-            raise NotImplementedError
-        assert self.device is not None
-
+        self.log = logging.getLogger(self.__class__.__name__)
+        self.channels = None
         self.status = None
 
-        self.log.debug('Initializing device proxy channels...')
+        try:
+            # select device interface backend
+            self.log.debug("Using device class %s" % device_interface.upper())
+            if device_interface == 'usb':
+                self.device = Devices.USB(config)  # defaults to config 1
+            elif device_interface == 'dummy':
+                self.device = Devices.Dummy()
+            elif device_interface == 'zmq':
+                self.device = Devices.Socket('socket:port')
+            else:
+                raise NotImplementedError
+        except (ValueError, ImportError) as error:
+            self.log.error('Device not instantiated: {}'.format(error))
+            return
 
+        assert self.device is not None
+
+        self.log.debug('Initializing device proxy channels...')
         # The general control/status channel and diode driver channels
-        self.channels = {n: LaserChannel(channel_number=n) if n else StatusChannel(self)
-                         for n in range(self.device.num_channels+1)}  # +1 for status channel (channel 0)
-        self.status = self.channels[0]
-        self.status.initialize(self.device)
+        # Channel 0: Status channel, device status, modes, general information
+        # Channels 1-2: Laser channels if in independent mode, otherwise only channel 1
+        status_channel = StatusChannel(self)
+        try:
+            status_channel.initialize(self.device)
+        except BaseException, error:
+            self.log.error(error)
+            return
+
+        self.status = status_channel
+        self.channels = {n: self.status if n == 0 else LaserChannel(chan_num=n)
+                         for n in range(self.device.num_channels+1)}
         self.log.debug('Device proxy channels initiated.')
 
     def update(self):
         """Ask the channels to ask the device to grab the respective current states."""
         for channel in self.channels.values():
             channel.update()
-
-    def show_packet(self, packet):
-        """Show formatted packet content. Rather useful for debugging."""
-        # TODO: Pull in description of field values.
-        self.log.info(repr(packet))
-
-    def show_alarms(self):
-        """Output current state of alarm flag(s)."""
-        self.status.show_alarms()
-
-    @property
-    def model(self):
-        self.log.debug('Model description:')
-        return self.status.model
-
-    @property
-    def fwver(self):
-        self.log.debug('Firmware version:')
-        return self.status.fwver
-
-    @property
-    def num_channels(self):
-        self.log.debug('Channel count:')
-        return self.status.num_channels
-
-    @property
-    def serial(self):
-        self.log.debug('Serial number:')
-        return self.status.serial
 
     def reset(self):
         """Reset whole device.
@@ -86,7 +70,6 @@ class FL593FL(object):
         self.device.reset()
 
     def close(self):
-        # disable and zero channel controls
         self.status.close()
         for key in self.channels:
             self.channels[key].close()
@@ -109,7 +92,9 @@ if __name__ == '__main__':
     logging.basicConfig(level=log_level, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     dev = FL593FL(device_interface='dummy' if cli_args.DUMMY else 'usb')
-    print 'Model:', dev.model
-    print 'Firmware:', dev.fwver
-    dev.show_alarms()
-    dev.close()
+    if dev is not None and dev.status is not None:
+        print dev.status
+        print 'Model:', dev.status.get_model()
+        print 'Firmware:', dev.status.get_fw_version()
+        dev.status.show_alarms()
+        dev.close()

@@ -22,9 +22,9 @@ LOG_LEVEL = logging.INFO
 NO_EXIT_CONFIRMATION = False
 
 
-class Main(QtGui.QMainWindow):
+class Main(QtGui.QMainWindow, object):
 
-    def __init__(self, app, device_interface='usb', *args, **kwargs):
+    def __init__(self, app, device_interface='usb'):
         QtGui.QMainWindow.__init__(self)
         self.log = logging.getLogger(__name__)
         self.fl593fl = None
@@ -86,16 +86,6 @@ class Main(QtGui.QMainWindow):
 
         # start timer for next refresh
         QtCore.QTimer.singleShot(self.gui_refresh_interval, self.refresh)
-
-    # @property
-    # def device(self):
-    #     """Getter for device handle."""
-    #     return self._device_ref
-    #
-    # @device.setter
-    # def device(self, device):
-    #     """Setter for device handle."""
-    #     self._device_ref = device
 
     def reset_device(self):
         """Reset device (bus). """

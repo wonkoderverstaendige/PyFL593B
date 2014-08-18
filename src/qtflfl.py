@@ -58,8 +58,8 @@ class Main(QtGui.QMainWindow, object):
         assert self.fl593fl is not None
 
         # add channels/initialize widgets now that we have a working connection
-        self.status_widget.initialize()
-        self.channel_widgets = [ChannelWidget(self, n+1) for n in range(self.fl593fl.num_channels)]
+        self.status_widget.initialize(self.fl593fl)
+        self.channel_widgets = [ChannelWidget(self, n+1) for n in range(self.fl593fl.status.get_num_channels())]
         for widget in self.channel_widgets:
             self.ui.layout_channels.addWidget(widget)
             widget.initialize(self.device.channels[widget.num_channel])

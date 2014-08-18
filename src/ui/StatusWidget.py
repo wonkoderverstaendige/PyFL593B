@@ -22,18 +22,18 @@ class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):
         # Control widget
         self.push_REN.toggled.connect(self.toggle_remote_enable)
 
-    def initialize(self):
-        self.device = self.parent.device
+    def initialize(self, device):
+        self.status = device.status
         assert self.device is not None
-        if self.device.model is not None:
-            self.lbl_dev_name.setText(self.device.model)
-        if self.device.fwver is not None:
-            self.lbl_fw_ver.setText(self.device.fwver)
-        if self.device.serial is not None:
-            self.lbl_serial_num.setText(self.device.serial)
+        if self.status.get_model() is not None:
+            self.lbl_dev_name.setText(self.status.get_model())
+        if self.status.get_fw_version() is not None:
+            self.lbl_fw_ver.setText(self.status.get_fw_version())
+        if self.status.get_serial() is not None:
+            self.lbl_serial_num.setText(self.status.get_serial())
 
     def refresh(self):
-        if self.device is None:
+        if self.status is None:
             return
         self.refresh_enable_flags()
 
@@ -45,17 +45,17 @@ class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):
 
         self.toggle_laser_warning(self.device.control.output_enable)
 
-        self.set_enable_icon(self.lbl_external_icon, self.device.control.external_enable)
-        self.set_enable_icon(self.lbl_output_icon, self.device.control.output_enable)
-        self.set_enable_icon(self.lbl_local_icon, self.device.control.local_enable)
-        self.push_REN.setChecked(self.device.control.remote_enable)
+        self.set_enable_icon(self.lbl_external_icon, self.status.external_enable)
+        self.set_enable_icon(self.lbl_output_icon, self.status.output_enable)
+        self.set_enable_icon(self.lbl_local_icon, self.status.local_enable)
+        self.push_REN.setChecked(self.status.remote_enable)
 
     def toggle_remote_enable(self, state):
         """Toggle the state of the remote enable flag when toggling the checkbutton."""
-        if self.device is None:
+        if self.status is None:
             return
         self.log.debug('Setting remote enable {0:s}'.format('ON' if state else 'OFF'))
-        self.device.control.remote_enable = state
+        self.status.remote_enable = state
 
     def toggle_laser_warning(self, state):
         if self.lbl_laser_warning.isEnabled() != state:

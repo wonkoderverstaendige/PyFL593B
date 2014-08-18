@@ -183,6 +183,7 @@ class Dummy(Device):
         if packet.op_type == TYPE_WRITE:
             pack_list = [DEVICE_TYPE, packet.channel, packet.op_type, packet.op_code, ERR_OK]
             pack_list.extend(packet.data)
+            pack_list.extend([0x00]*(EP_PACK_OUT-len(pack_list)))
             self.array.fromlist(pack_list)
             return self.array
             # data_dict = {

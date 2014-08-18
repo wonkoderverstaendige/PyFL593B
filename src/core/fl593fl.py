@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
     dev = FL593FL(device_interface='dummy' if cli_args.DUMMY else 'usb')
     if dev is not None and dev.status is not None:
-        print dev.status
+        print 'Device:', dev.status
         print 'Model:', dev.status.get_model()
         print 'Firmware:', dev.status.get_fw_version()
         dev.status.show_alarms()

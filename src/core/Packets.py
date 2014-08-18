@@ -41,7 +41,8 @@ class Packet(object):
             names = ['DevType', 'Channel', 'OpType', 'OpCode', 'EndCode', 'Data']
         fields = ['{0:#x}'.format(p) for p in self.get_array()[0:len(names)-1]]
         fields.extend([''.join([chr(c) for c in self.get_array()[len(names)-1:]])])
-        return ''.join(['{0:<7s}: {1:s}\n'.format(n, f) for n, f in zip(names, fields)])
+        full_fields = ''.join(['{0:<7s}: {1:s}\n'.format(n, f) for n, f in zip(names, fields)])
+        return "Packet " + self.__class__.__name__ + ':\n' + full_fields
 
     def __str__(self):
         """Bare string representation of packet array content.

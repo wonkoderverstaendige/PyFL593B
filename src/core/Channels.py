@@ -79,7 +79,6 @@ class StatusChannel(Channel):
         for n in range(MAX_CONN_RETRIES):
             time.sleep(TIMEOUT/1000.)  # sleep a moment to let device boot up
             e, rp = self.set_remote_enable(START_REMOTE_ENABLE_STATE)
-            self.log.debug(e)
             if rp is not None:
                 break
             else:
@@ -173,7 +172,6 @@ class StatusChannel(Channel):
                                op_code=CMD_ENABLE,
                                data=[FLAG_ON if state else FLAG_OFF])
         e, rp = self.push(packet)
-        print e, rp, 'SUCCESSFUL PUSH!'
         self.log.debug('Remote enable set to: {}'.format(EXIT_REMOTE_ENABLE_STATE))
         return e, rp
 

@@ -189,7 +189,7 @@ class LaserChannel(Channel):
 
     def __init__(self, name=None, *args, **kwargs):
         super(LaserChannel, self).__init__(*args, **kwargs)
-        self.log = logging.getLogger(self.__class__.__name__)
+        self.log = logging.getLogger(self.__class__.__name__+'[{}]'.format(self.id))
         self.name = name if name is not None else 'Channel {}'.format(self.id)
 
         self.cmd = [('read_imon', TYPE_READ, CMD_IMON),

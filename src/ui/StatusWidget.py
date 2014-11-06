@@ -23,8 +23,9 @@ class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):
         self.push_REN.toggled.connect(self.toggle_remote_enable)
 
     def initialize(self, device):
+        assert device is not None
+        self.device = None
         self.status = device.status
-        assert self.device is not None
         if self.status.get_model() is not None:
             self.lbl_dev_name.setText(self.status.get_model())
         if self.status.get_fw_version() is not None:

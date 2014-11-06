@@ -30,6 +30,7 @@ class Main(QtGui.QMainWindow, object):
         self.fl593fl = None
         self.device_interface = device_interface
         self.app = app
+        self.log.debug("Readying MainUi Window")
         self.ui = MainWindowUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -39,10 +40,11 @@ class Main(QtGui.QMainWindow, object):
         # Channel widgets
         self.channel_widgets = []
 
-        # Status widget
+        # Status widget shows and interacts with flags and warning label
         self.status_widget = StatusWidget(self)
         self.ui.frame_layout.addWidget(self.status_widget)
 
+        # Main loop control stuff
         self.stopwatch = QtCore.QElapsedTimer()
         self.stopwatch.start()
         self.running = True  # to prevent GUI refresh during device shutdown

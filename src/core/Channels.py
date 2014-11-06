@@ -172,7 +172,7 @@ class StatusChannel(Channel):
                                op_code=CMD_ENABLE,
                                data=[FLAG_ON if state else FLAG_OFF])
         e, rp = self.push(packet)
-        self.log.debug('Remote enable set to: {}'.format(EXIT_REMOTE_ENABLE_STATE))
+        self.log.debug('Remote enable set to: {}'.format(state))
         return e, rp
 
     def close(self):
@@ -209,7 +209,7 @@ class LaserChannel(Channel):
                     ('write_mode', TYPE_WRITE, CMD_MODE)]
 
         # pre-built packages that don't need extra data
-        self.log.debug('Building laser channel {0:d} packet dictionary'.format(self.id))
+        self.log.debug('Building channel packet dictionary')
         self.packets = {p[0]: CommandPacket(channel=self.id,
                                             op_type=p[1],
                                             op_code=p[2])
@@ -218,16 +218,19 @@ class LaserChannel(Channel):
     def initialize(self, device):
         """First things to do once device is ready to talk to."""
         self.device = device
-        self.log.debug('Initializing laser channel {0:d}'.format(self.id))
+        self.log.debug('Initializing...')
         self.zero(AUTO_START_ZERO_LIMIT, AUTO_START_ZERO_SET)
 
-    def zero(self, zero_limit, zero_setpoint):
-        """Zero the limits and/or setpoints for this channel."""
+    def zero(self, zero_limit=True, zero_setpoint=True):
+        """Zero the limits and/or setpoints for this channel.
+        Useful on startup, just because, and on shutdown."""
+        
+        #TODO: Zero-ing buttons in the GUI to quickly reset everything
         if zero_limit:
-            self.log.debug('Zeroing limit Channel {0:d}'.format(self.id))
+            self.log.debug('Zeroing limit')
             self.set_limit(0.0)
         if zero_setpoint:
-            self.log.debug('Zeroing setpoint Channel {0:d}'.format(self.id))
+            self.log.debug('Zeroing setpoint')
             self.set_setpoint(0.0)
 
     def update(self):
@@ -242,14 +245,10 @@ class LaserChannel(Channel):
             ('_limit', float),
             ('_set', float)]
         for item in update_list:
-            e, rp = self.get('read'+item[0])
+            e, rp = self.get('read' + item[0])
             if not e:
+                # cast the result of calling the retreived method
                 setattr(self, [item[0]], item[1](rp.data_str()))
-
-        # show limit
-        rp = self.device.transceive(self.packets['max_limit'])
-        if rp is not None:
-            print rp.data_str
 
     def get_mode(self):
         return self._mode

@@ -1,6 +1,6 @@
 #PyFL593FL
 
-Python/PyUSB interface to the ![FL593FL](http://www.teamwavelength.com/products/product.php?part=154)  evaluation board for the TeamWavelength ![FL500](http://www.teamwavelength.com/products/product.php?part=147) laser diode driver.
+Python/PyUSB interface to the [FL593FL](http://www.teamwavelength.com/products/product.php?part=154)  evaluation board for the TeamWavelength [FL500](http://www.teamwavelength.com/products/product.php?part=147) laser diode driver.
 
 <p align="center">
   <img
@@ -12,7 +12,7 @@ USB communication is handled by PyUSB, which can operate with several backends, 
 
 ##Windows
 
-To install the driver, use ![Zadig](http://zadig.akeo.ie/) and install a libusb-win32 driver as per instructions (For this exact model: vendor id: 0x1a45, product id: 0x2001). Very easy. Then install ![PyUSB](https://github.com/walac/pyusb) and done (assuming all the other requirements like PyQt are installed...).
+To install the driver, use [Zadig](http://zadig.akeo.ie/) and install a libusb-win32 driver as per instructions (For this exact model: vendor id: 0x1a45, product id: 0x2001). Very easy. Then install [PyUSB](https://github.com/walac/pyusb) and done (assuming all the other requirements like PyQt are installed...).
 
 ##Linux
 

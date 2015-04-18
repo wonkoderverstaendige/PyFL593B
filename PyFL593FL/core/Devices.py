@@ -13,7 +13,8 @@ Dummy: Virtual device for debugging. Returns semi-random values
 
 import logging
 from array import array
-from fl593fl_constants import *
+from constants import *
+from util import encode_command, decode_command, encode_response, decode_response
 try:
     import usb
 except ImportError:
@@ -36,6 +37,9 @@ class Device(object):
         self.device = None
         self.num_channels = MAX_NUM_CHAN
 
+    def __enter__(self):
+        pass
+
     def open(self, *args, **kwargs):
         """Open connection to device."""
         self.device = None
@@ -51,6 +55,9 @@ class Device(object):
         """Reset the device, either to recover or prevent fault states on shutdown."""
         self.device = None
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def close(self):
         """Close the connection to the device."""
         if self.device is not None:
@@ -58,7 +65,7 @@ class Device(object):
 
 
 class USB(Device):
-    def __init__(self, config=1, idVendor=VENDOR_ID, idProduct=PRODUCT_ID):
+    def __init__(self, config=1, vendor_id=VENDOR_ID, product_id=PRODUCT_ID):
         super(USB, self).__init__()
 
         # PyUSB must be available for this device interface
@@ -66,13 +73,13 @@ class USB(Device):
             raise ImportError('PyUSB not found.')
 
         try:
-            self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(idVendor, idProduct))
-            device = usb.core.find(idVendor=idVendor, idProduct=idProduct)
+            self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(vendor_id, product_id))
+            device = usb.core.find(idVendor=vendor_id, idProduct=product_id)
         except usb.core.USBError as error:
             raise error
         # TODO: search for a particular name
         if device is None:
-            raise ValueError('USB device {0:x}:{1:x} not found'.format(idVendor, idProduct))
+            raise ValueError('USB device {0:x}:{1:x} not found'.format(vendor_id, product_id))
         self.log.info('Attached to USB device %s as FL593FL', device)
 
         # May  be unnecessary, as this is not an HID
@@ -124,22 +131,25 @@ class USB(Device):
         # for i, interface in enumerate(self.config):
         #     self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
 
-    def transceive(self, cmd_packet):
-        # Write command packet
+    def transceive(self, command):
+        """Send a command string and receive response."""
+
+        # Write coded command
         try:
-            self.endpoint_out.write(cmd_packet.packet)
+            self.endpoint_out.write(encode_command(command))
         except usb.USBError as error:
             self.log.error("Could not write to USB! {:s}".format(error))
             return None
 
         # Read back result
         try:
-            resp_packet = ResponsePacket(self.endpoint_in.read(self.endpoint_in.wMaxPacketSize, TIMEOUT))
+            print self.endpoint_in.wMaxPacketSize
+            response = self.endpoint_in.read(self.endpoint_in.wMaxPacketSize, TIMEOUT)
         except usb.USBError as error:
             self.log.error("Could not receive response! {:s}".format(error))
             return None
 
-        return resp_packet
+        return response
 
 
 class Dummy(Device):
@@ -202,6 +212,7 @@ class Dummy(Device):
             # data_dict[packet.op_code],
             #                      packet.data])
             # return self.array
+
 
 class Socket(Device):
     """Allows control via sockets, e.g. over ethernet to a remote server."""

@@ -7,7 +7,7 @@ Created on 05 Apr 2014 3:27 AM
 
 import time
 import logging
-from fl593fl_constants import *
+from constants import *
 from Packets import CommandPacket, ResponsePacket
 
 

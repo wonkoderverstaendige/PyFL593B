@@ -7,7 +7,7 @@ Created on 08 Apr 2014 2:22 PM
 
 import logging
 from array import array
-from fl593fl_constants import *
+from constants import *
 
 
 class Packet(object):
@@ -77,7 +77,7 @@ class CommandPacket(Packet):
     The array will be sent to the device, to change or inquire the
     status of a register.
     """
-    def __init__(self, dev_type=DEVICE_TYPE,
+    def __init__(self, dev_type=DEV_TYPE,
                  channel=CHAN_STATUS,
                  op_type=TYPE_READ,
                  op_code=CMD_MODEL,

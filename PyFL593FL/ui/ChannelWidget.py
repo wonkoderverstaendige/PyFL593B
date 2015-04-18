@@ -8,7 +8,7 @@ Created on 14 Aug 2014 2:20 PM
 
 import logging
 from PyQt4 import QtGui, QtCore
-from ui import ChannelWidgetUi
+import ChannelWidgetUi
 
 
 class ChannelWidget(QtGui.QWidget, ChannelWidgetUi.Ui_Channel):

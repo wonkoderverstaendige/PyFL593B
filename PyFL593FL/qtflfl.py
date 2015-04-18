@@ -111,19 +111,8 @@ class Main(QtGui.QMainWindow, object):
 
 #############################################################
 def main(*args, **kwargs):
-    app = QtGui.QApplication([])
-    # identifiers for QSettings persistent application settings
-    app.setOrganizationName('battaglia_lab')
-    app.setOrganizationDomain('science.ru.nl')
-    app.setApplicationName('FL593FL')
+    global NO_EXIT_CONFIRMATION, LOG_LEVEL
 
-    window = Main(app, *args, **kwargs)
-    window.show()
-    window.raise_()  # needed on OSX?
-
-    sys.exit(app.exec_())
-
-if __name__ == "__main__":
     # Command line parsing
     import argparse
     parser = argparse.ArgumentParser(prog='PyFL593FL Qt GUI')
@@ -145,4 +134,20 @@ if __name__ == "__main__":
         dev_interface = 'usb'
 
     # Let's roll
-    main(device_interface=dev_interface)
+    app = QtGui.QApplication([])
+
+    # identifiers for QSettings persistent application settings
+    app.setOrganizationName('battaglia_lab')
+    app.setOrganizationDomain('science.ru.nl')
+    app.setApplicationName('FL593FL')
+
+    window = Main(app, *args, **kwargs)
+    window.show()
+    window.raise_()  # needed on OSX?
+
+    sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    print LOG_LEVEL
+    main()
+

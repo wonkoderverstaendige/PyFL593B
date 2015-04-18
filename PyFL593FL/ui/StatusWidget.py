@@ -7,7 +7,7 @@ Created on 14 Aug 2014 2:37 PM
 
 import logging
 from PyQt4 import QtGui, QtCore
-from ui import StatusWidgetUi, icons_rc
+import StatusWidgetUi, icons_rc
 
 
 class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):

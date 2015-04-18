@@ -60,8 +60,7 @@ class Device(object):
 
     def close(self):
         """Close the connection to the device."""
-        if self.device is not None:
-            self.device.close()
+        pass
 
 
 class USB(Device):
@@ -77,10 +76,12 @@ class USB(Device):
             device = usb.core.find(idVendor=vendor_id, idProduct=product_id)
         except usb.core.USBError as error:
             raise error
-        # TODO: search for a particular name
+
         if device is None:
             raise ValueError('USB device {0:x}:{1:x} not found'.format(vendor_id, product_id))
-        self.log.info('Attached to USB device %s as FL593FL', device)
+        self.log.info('Device attached as FL593FL:\n %s', device)
+        self.log.info('Resetting...')
+        device.reset()
 
         # May  be unnecessary, as this is not an HID
         try:
@@ -151,6 +152,11 @@ class USB(Device):
 
         return response
 
+    def close(self):
+        if self.device is not None:
+            self.device.reset()
+            self.device.close()
+        self.device = None
 
 class Dummy(Device):
     """Dummy class to allow running the GUI without any device attached.

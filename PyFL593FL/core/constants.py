@@ -13,7 +13,7 @@ Note: all codes are < 0x00FF, so the first Byte of each field (other than data) 
 """
 
 # DEVICE BEHAVIOR
-TIMEOUT = 10000  # default timeout of read/write is 100 ms
+TIMEOUT = 100  # default timeout of read/write is 100 ms
 
 AUTO_START_ZERO_SET = True  # For safety reasons, try to disable
 AUTO_START_ZERO_LIMIT = True  # For safety reasons, try to zero
@@ -23,7 +23,7 @@ AUTO_EXIT_ZERO_SET = True  # For safety reasons, try to disable
 AUTO_EXIT_ZERO_LIMIT = True  # For safety reasons, try to zero
 EXIT_REMOTE_ENABLE_STATE = False  # For safety reasons, disable on exit
 
-# WEIUSB protocol constants
+# WEIUSB protocol constants ACCORDING TO DOCUMENTATION! BEWARE, SEE NOTE BELOW TABLES!
 
 # COMMAND PACKET:
 # | Field:   | DevType  | Channel  | OpType  | OpCode  |                     Data                      |
@@ -35,6 +35,9 @@ EXIT_REMOTE_ENABLE_STATE = False  # For safety reasons, disable on exit
 # | Field:   | DevType  | Channel  | OpType  | OpCode  | EndCode  |                      Data                       |
 # |----------|----------|----------|---------|---------|----------|-------------------------------------------------|
 # | Offset:  |   0  1   |   2  3   |  4  5   |  6  7   |   8  9   | 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 |
+
+##### !!! Contrary to documentation, fields other than "Data" are only of size 1 (Byte), not 2!!! This means all
+##### !!! offsets are wrong.
 
 # DEVICE CONSTANTS
 VENDOR_ID = 0x1a45
@@ -57,7 +60,7 @@ CHANNEL_DICT = {
     'LD1': CHAN_LD1,
     'LD2': CHAN_LD2,
 }
-CHANNEL_DICT_REV = {v: k for v, k in CHANNEL_DICT.iteritems()}
+CHANNEL_DICT_REV = {v: k for k, v in CHANNEL_DICT.iteritems()}
 
 # OpTypes
 TYPE_READ = 0x0001  # return OpCode quantity to host
@@ -70,7 +73,7 @@ OP_TYPE_DICT = {
     "MIN": TYPE_MIN,
     "MAX": TYPE_MAX,
 }
-OP_TYPE_DICT_REV = {v: k for v, k in OP_TYPE_DICT.iteritems()}
+OP_TYPE_DICT_REV = {v: k for k, v in OP_TYPE_DICT.iteritems()}
 
 # General OpCodes
 # r = read, w = write
@@ -119,7 +122,7 @@ OP_CODE_DICT = {
     'RPD': CMD_RPD,
     'CAL_ISCALE': CMD_CAL_ISCALE,
 }
-OP_CODE_DICT_REV = {v: k for v, k in OP_CODE_DICT.iteritems()}
+OP_CODE_DICT_REV = {v: k for k, v in OP_CODE_DICT.iteritems()}
 
 # ALARM FLAGS
 NUM_ALARMS = 10
@@ -145,7 +148,7 @@ ALARM_FLAG_DICT = {
     'WRITE':  ALARM_WRITE,  # write to non-volatile memory in progress following SAVE
     'CALMODE': ALARM_CALMODE,  # 1: device is in calibration mode, entered with PASSWD and left with REVERT
     }
-ALARM_FLAG_DICT_REV = {v: k for v, k in ALARM_FLAG_DICT.iteritems()}
+ALARM_FLAG_DICT_REV = {v: k for k, v in ALARM_FLAG_DICT.iteritems()}
 
 # FLAGS (instead of taking non-zero values as true, uses literal ASCII characters)
 # I assume all input gets fed through atoi, sscan or similar?
@@ -173,8 +176,8 @@ END_CODE_DICT = {
     ERR_BUSY: "Device busy, operation not performed",
     ERR_DATA: "Data field content invalid for op_code",
     ERR_SAFETY: "Requested operation not within safety specs",
-    ERR_CALMODE: "Operation only available in calibration mode"}
-END_CODE_DICT_REV = {v: k for v, k in END_CODE_DICT.iteritems()}
+    ERR_CALMODE: "Operation only available in calibration mode"
+}
 
 
 # DATA (data ignored for types read, min and max)

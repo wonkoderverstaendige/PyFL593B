@@ -18,10 +18,16 @@ from Devices import USB
 
 if __name__ == '__main__':
     import logging
-    logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     dev = USB()
     cmd = encode_command("STATUS READ MODEL")
     print "{}Bytes Data: {}".format(len(cmd), cmd.tostring().encode('hex'))
     rsp = dev.transceive("STATUS READ MODEL")
+    if rsp:
+        print "Response:", decode_response(rsp)
+
+    cmd = encode_command("STATUS READ CHANCT")
+    print "{}Bytes Data: {}".format(len(cmd), cmd.tostring().encode('hex'))
+    rsp = dev.transceive("STATUS READ CHANCT")
     if rsp:
         print "Response:", decode_response(rsp)

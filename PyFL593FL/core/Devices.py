@@ -154,6 +154,9 @@ class USB(Device):
 
         return decode_response(response)
 
+    def test_command(self, command):
+        print command
+
     def close(self):
         if self.device is not None:
             self.device.reset()

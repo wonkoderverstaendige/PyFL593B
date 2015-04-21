@@ -14,7 +14,7 @@ Dummy: Virtual device for debugging. Returns semi-random values
 import logging
 from array import array
 from constants import *
-from util import encode_command, decode_command, encode_response, decode_response
+from util import encode_command, decode_response
 try:
     import usb
 except ImportError:
@@ -139,24 +139,27 @@ class USB(Device):
         try:
             self.endpoint_out.write(encode_command(command))
         except usb.USBError as error:
-            self.log.error("Could not write to USB! {:s}".format(error))
+            self.log.error("Could not write to USB: {:s}".format(error))
+            return None
+        except ValueError as error:
+            self.log.error(error)
             return None
 
         # Read back result
         try:
-            print self.endpoint_in.wMaxPacketSize
             response = self.endpoint_in.read(self.endpoint_in.wMaxPacketSize, TIMEOUT)
         except usb.USBError as error:
-            self.log.error("Could not receive response! {:s}".format(error))
+            self.log.error("No response: {:s}".format(error))
             return None
 
-        return response
+        return decode_response(response)
 
     def close(self):
         if self.device is not None:
             self.device.reset()
             self.device.close()
         self.device = None
+
 
 class Dummy(Device):
     """Dummy class to allow running the GUI without any device attached.

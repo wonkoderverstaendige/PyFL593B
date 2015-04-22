@@ -168,17 +168,29 @@ ERR_SAFETY = 0x0008  # requested op not within safety specs of config
 ERR_CALMODE = 0x0009  # requested op only available in calibration mode!
 END_CODE_DICT = {
     ERR_OK: "OK",
+    ERR_DEVTYPE: "DEVTYPE",
+    ERR_CHANNEL: "CHANNEL",
+    ERR_OPTYPE: "OPTYPE",
+    ERR_NOTIMPL: "NOTIMPL",
+    ERR_PENDING: "PENDING",
+    ERR_BUSY: "BUSY",
+    ERR_DATA: "DATA",
+    ERR_SAFETY: "SAFETY",
+    ERR_CALMODE: "CALMODE"
+}
+END_CODE_DICT_REV = {v: k for k, v in END_CODE_DICT.iteritems()}
+END_CODE_DESC_DICT = {
+    ERR_OK: "No Error",
     ERR_DEVTYPE: "Incorrect device type",
     ERR_CHANNEL: "Channel number out of range",
     ERR_OPTYPE: "Op-type not supported",
     ERR_NOTIMPL: "Op-code not implemented",
     ERR_PENDING: "Pending, command received but data was ignored",
     ERR_BUSY: "Device busy, operation not performed",
-    ERR_DATA: "Data field content invalid for op_code",
+    ERR_DATA: "Data field content invalid for op-code",
     ERR_SAFETY: "Requested operation not within safety specs",
     ERR_CALMODE: "Operation only available in calibration mode"
 }
-
 
 # DATA (data ignored for types read, min and max)
 LEN_DATA = 16  # length data field in bytes

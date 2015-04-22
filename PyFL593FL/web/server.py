@@ -77,10 +77,11 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
         ChatSocketHandler.update_cache(chat)
         ChatSocketHandler.send_updates(chat)
 
-        response = self.to_chat(self.device.transceive(chat["body"]), json=False)
-        ChatSocketHandler.update_cache(response)
-        ChatSocketHandler.send_updates(response)
-
+        if device is not None:
+            response = self.to_chat(self.device.transceive(chat["body"]), json=False)
+            ChatSocketHandler.update_cache(response)
+            ChatSocketHandler.send_updates(response)
+    
     def to_chat(self, msg, json=True):
         chat = {"id": str(uuid.uuid4()), "body": tornado.escape.json_decode(msg)["body"] if json else msg}
         chat["html"] = tornado.escape.to_basestring(

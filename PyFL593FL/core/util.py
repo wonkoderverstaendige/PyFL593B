@@ -60,7 +60,24 @@ def decode_response(response):
 
     return ' '.join([channel, op_type, op_code, end_code, data.tostring().strip()])
 
+def unpack_string(string, has_endcode=False):
+    """Make string into a dictionary with fields"""
+    try:
+        assert len(string)
+        string = string.upper()
+        words = string.split(" ")
+        channel = CHANNEL_DICT[words[0]]
+        op_type = OP_TYPE_DICT[words[1]]
+        op_code = OP_CODE_DICT[words[2]]
+        end_code = END_CODE_DICT[words[3]] if has_endcode else None
+        data = ' '.join(words[(4 if has_endcode else 3):])
+        return [channel, op_type, op_code, end_code, data]
+    except BaseException as error:
+        raise error
+
 if __name__ == "__main__":
     cmd = "STATUS READ MODEL"
     ecmd = encode_command(cmd)
     print cmd, ':', ecmd, len(ecmd), ecmd.tostring().encode('hex')
+    print unpack_string(cmd)
+    print unpack_string("STATUS READ")

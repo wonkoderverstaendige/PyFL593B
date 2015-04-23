@@ -18,6 +18,7 @@
 from array import array
 from constants import *
 from itertools import chain
+from collections import namedtuple
 positionals = [CHANNEL_DICT, OP_TYPE_DICT, OP_CODE_DICT]
 
 
@@ -63,21 +64,28 @@ def decode_response(response):
 def unpack_string(string, has_endcode=False):
     """Make string into a dictionary with fields"""
     try:
-        assert len(string)
-        string = string.upper()
-        words = string.split(" ")
-        channel = CHANNEL_DICT[words[0]]
-        op_type = OP_TYPE_DICT[words[1]]
-        op_code = OP_CODE_DICT[words[2]]
-        end_code = END_CODE_DICT[words[3]] if has_endcode else None
-        data = ' '.join(words[(4 if has_endcode else 3):])
-        return [channel, op_type, op_code, end_code, data]
-    except BaseException as error:
-        raise error
+        words = list(reversed(string.upper().split(" ")))
+        packet = namedtuple("packet", "channel, op_code, end_code, data, string")
+        packet.string = string.upper()
+        packet.channel = CHANNEL_DICT[words.pop()]
+        packet.op_type = OP_TYPE_DICT[words.pop()]
+        packet.op_code = OP_CODE_DICT[words.pop()]
+        packet.end_code = END_CODE_DICT[words.pop()] if has_endcode else None
+        packet.data = ' '.join(reversed(words))  # rest is data, which may contain spaces
+        return packet
+    except IndexError as error:
+        raise ValueError("Incomplete packet: {}".format(string))
 
 if __name__ == "__main__":
     cmd = "STATUS READ MODEL"
     ecmd = encode_command(cmd)
-    print cmd, ':', ecmd, len(ecmd), ecmd.tostring().encode('hex')
+    print cmd, ':'
+    print ecmd, ecmd.tostring().encode('hex')
     print unpack_string(cmd)
-    print unpack_string("STATUS READ")
+    try:
+        unpack_string("STATUS READ")  # incomplete command
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Should have been illegal string!")
+

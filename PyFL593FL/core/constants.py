@@ -122,6 +122,37 @@ OP_CODE_DICT = {
     'RPD': CMD_RPD,
     'CAL_ISCALE': CMD_CAL_ISCALE,
 }
+# TODO: Expiring memoization to priorize updating quickly changing values
+# Should make access of properties from the GUI less painful
+# but cap request rate to 10 ms, i.e. ~ once per > 60fps refresh
+# should allow to read from memoized channels withhout having to worry about
+# repeated accesses and keeping them up-to-date internally
+# see utils.py:memoize_with_expiry decorator
+EXPIRY_NEVER = -1.0
+EXPIRY_FAST = 0.010
+EXPIRY_IMMEDIATE = 0.0
+EXPIRY_DICT = {
+    CMD_MODEL: EXPIRY_NEVER,
+    CMD_SERIAL: EXPIRY_NEVER,
+    CMD_FWVER: EXPIRY_NEVER,
+    CMD_DEVTYPE: EXPIRY_NEVER,
+    CMD_CHANCT: EXPIRY_NEVER,
+    CMD_IDENTIFY: EXPIRY_IMMEDIATE,
+    CMD_SAVE: EXPIRY_IMMEDIATE,
+    CMD_PASSWD: EXPIRY_IMMEDIATE,
+    CMD_REVERT: EXPIRY_IMMEDIATE,
+    CMD_RECALL: EXPIRY_IMMEDIATE,
+    CMD_ALARM: EXPIRY_IMMEDIATE,
+    CMD_SETPOINT: 0.1,
+    CMD_LIMIT: 0.1,
+    CMD_MODE: 1.0,
+    CMD_TRACK: 1.0,
+    CMD_IMON: EXPIRY_IMMEDIATE,
+    CMD_PMON: EXPIRY_IMMEDIATE,
+    CMD_ENABLE: 0.1,
+    CMD_RPD: 1,
+    CMD_CAL_ISCALE: 1,
+}
 OP_CODE_DICT_REV = {v: k for k, v in OP_CODE_DICT.iteritems()}
 
 # ALARM FLAGS

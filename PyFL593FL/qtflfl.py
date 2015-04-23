@@ -24,13 +24,13 @@ NO_EXIT_CONFIRMATION = False
 
 class Main(QtGui.QMainWindow, object):
 
-    def __init__(self, app, device_interface='usb'):
+    def __init__(self, app, device_interface='usb', *args, **kwargs):
         QtGui.QMainWindow.__init__(self)
         self.log = logging.getLogger(__name__)
         self.fl593fl = None
         self.device_interface = device_interface
         self.app = app
-        self.log.debug("Readying MainUi Window")
+        self.log.debug("Readying MainUi Window for {} device".format(device_interface))
         self.ui = MainWindowUi.Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -128,10 +128,7 @@ def main(*args, **kwargs):
         LOG_LEVEL = logging.DEBUG
     logging.basicConfig(level=LOG_LEVEL, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    if cli_args.DUMMY:
-        dev_interface = 'dummy'
-    else:
-        dev_interface = 'usb'
+    device_interface = 'dummy' if cli_args.DUMMY else 'usb'
 
     # Let's roll
     app = QtGui.QApplication([])
@@ -141,7 +138,7 @@ def main(*args, **kwargs):
     app.setOrganizationDomain('science.ru.nl')
     app.setApplicationName('FL593FL')
 
-    window = Main(app, *args, **kwargs)
+    window = Main(app, device_interface, *args, **kwargs)
     window.show()
     window.raise_()  # needed on OSX?
 

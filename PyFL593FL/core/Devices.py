@@ -12,9 +12,8 @@ Dummy: Virtual device for debugging. Returns semi-random values
 """
 
 import logging
-from array import array
 from constants import *
-from util import encode_command, decode_response
+from util import encode_command, decode_response, unpack_string
 try:
     import usb
 except ImportError:
@@ -24,8 +23,6 @@ try:
     import zmq
 except ImportError:
     zmq = None
-
-from Packets import CommandPacket, ResponsePacket
 
 
 class Device(object):
@@ -69,7 +66,7 @@ class USB(Device):
 
         # PyUSB must be available for this device interface
         if usb is None:
-            raise ImportError('PyUSB not found.')
+            raise ImportError('PyUSB not found. See README.md for instructions.')
 
         try:
             self.log.debug('Trying to attach USB device {0:x}:{1:x}'.format(vendor_id, product_id))
@@ -112,8 +109,8 @@ class USB(Device):
 
         # Device communication endpoints
         self.endpoint_out, self.endpoint_in = usb.util.find_descriptor(self.interface, find_all=True)
-        self.len_receive = self.endpoint_in.wMaxPacketSize
-        self.len_transmit = self.endpoint_out.wMaxPacketSize
+        assert self.endpoint_in.wMaxPacketSize == EP_PACK_IN
+        assert self.endpoint_out.wMaxPacketSize == EP_PACK_OUT
 
     def show_configurations(self):
         """Print/log all available configurations."""
@@ -134,28 +131,24 @@ class USB(Device):
 
     def transceive(self, command):
         """Send a command string and receive response."""
-
         # Write coded command
         try:
             self.endpoint_out.write(encode_command(command))
         except usb.USBError as error:
             self.log.error("Could not write to USB: {:s}".format(error))
-            return None
+            raise error
         except ValueError as error:
             self.log.error(error)
-            return None
+            raise error
 
         # Read back result
         try:
-            response = self.endpoint_in.read(self.endpoint_in.wMaxPacketSize, TIMEOUT)
+            response = self.endpoint_in.read(EP_PACK_IN, TIMEOUT)
         except usb.USBError as error:
             self.log.error("No response: {:s}".format(error))
-            return None
+            raise error
 
         return decode_response(response)
-
-    def test_command(self, command):
-        print command
 
     def close(self):
         if self.device is not None:
@@ -171,16 +164,17 @@ class Dummy(Device):
     """
     def __init__(self):
         super(Dummy, self).__init__()
-        self.array = array('B')
-        self.array.fromlist([0x00]*EP_PACK_OUT)
 
-    def transceive(self, cmd_packet):
-        self.log.debug(repr(cmd_packet))
-        return ResponsePacket(self.fake_data(cmd_packet))
+    def transceive(self, command):
+        return fake_data(command)
 
-    def fake_data(self, packet):
-        if packet.op_type == TYPE_READ:
-            return self.array
+    def fake_data(self, command):
+        packet = unpack_string(command)
+        if packet.op_type == OP_TYPE_READ:
+            print "YEP! WE WANT TO READ!!!"
+        else:
+            print "NOPE!"
+
             # data_dict = {
             #     CMD_MODEL: list('Dummy Device'),
             #     CMD_FWVER: list('0.1'),

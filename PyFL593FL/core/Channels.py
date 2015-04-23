@@ -8,30 +8,27 @@ Created on 05 Apr 2014 3:27 AM
 import time
 import logging
 from constants import *
-from Packets import CommandPacket, ResponsePacket
 
 
 class Channel(object):
     def __init__(self, chan_num=0):
         self.log = logging.getLogger(__name__)
         self.device = None
-        self.id = chan_num
-        self.packets = {}
+        self.id = CHANNEL_DICT_REV[chan_num]
 
-    def get(self, shorthand):
-        """Grab a value identified by shorthand descriptor."""
-        assert shorthand in self.packets.keys()
-        return self.push(self.packets[shorthand])
+    def read(self, field):
+        """Read a value."""
+        print " ".join([self.id, TYPE_READ, OP_CODE_DICT_REV[field]])
 
-    def push(self, packet):
-        """Helper transmitting command to device and handling return value."""
-        self.log.debug('Pushing packet: {}'.format(str(packet)))
-        rp = self.device.transceive(packet)
-        error = rp.end_code
-        if error is not ERR_OK:
-            self.log.error('Channel {} response packet returned error #{}: {}'.format(self.id, error,
-                                                                                      ERROR_DICT[error]))
-        return error, rp
+    def write(self, field, data):
+        """Write data to a field, handle response/error code"""
+        print " ".join([self.id, TYPE_WRITE, OP_CODE_DICT_REV[field], str(data)])
+
+    def min(self, field):
+        print " ".join([self.id, TYPE_MIN, OP_CODE_DICT_REV[field]])
+
+    def max(self, field):
+        print " ".join([self.id, TYPE_MAX, OP_CODE_DICT_REV[field]])
 
 
 class StatusChannel(Channel):

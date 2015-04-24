@@ -8,6 +8,7 @@ Created on 05 Apr 2014 3:27 AM
 import time
 import logging
 from constants import *
+from util import memoize_with_expiry, unpack_string
 
 
 class Channel(object):
@@ -16,19 +17,31 @@ class Channel(object):
         self.device = None
         self.id = CHANNEL_DICT_REV[chan_num]
 
-    def read(self, field):
-        """Read a value."""
-        print " ".join([self.id, TYPE_READ, OP_CODE_DICT_REV[field]])
+    @memoize_with_expiry()
+    def read(self, op_code):
+        """Read a value from field"""
+        command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_READ], OP_CODE_DICT_REV[op_code]])
+        return unpack_string(self.device.transceive(command), has_end_code=True)
 
-    def write(self, field, data):
+    def write(self, op_code, data):
         """Write data to a field, handle response/error code"""
-        print " ".join([self.id, TYPE_WRITE, OP_CODE_DICT_REV[field], str(data)])
+        command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_WRITE], OP_CODE_DICT_REV[op_code], str(data)])
+        response = unpack_string(self.device.transceive(command), has_end_code=True)
+        return response
 
-    def min(self, field):
-        print " ".join([self.id, TYPE_MIN, OP_CODE_DICT_REV[field]])
+    @memoize_with_expiry()
+    def min(self, op_code):
+        """Read max value of property"""
+        command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_MIN], OP_CODE_DICT_REV[op_code]])
+        print command
+        return unpack_string(self.device.transceive(command), has_end_code=True)
 
-    def max(self, field):
-        print " ".join([self.id, TYPE_MAX, OP_CODE_DICT_REV[field]])
+    @memoize_with_expiry()
+    def max(self, op_code):
+        """Read min value of property"""
+        command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_MAX], OP_CODE_DICT_REV[op_code]])
+        print command
+        return unpack_string(self.device.transceive(command), has_end_code=True)
 
 
 class StatusChannel(Channel):
@@ -45,38 +58,23 @@ class StatusChannel(Channel):
     _remote_enabled = None
     _external_enabled = None
 
-    def __init__(self, chan_num=0, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(StatusChannel, self).__init__(*args, **kwargs)
         self.log = logging.getLogger(self.__class__.__name__)
-        self.id = chan_num
-
-        self.cmd = [('read_model', TYPE_READ, CMD_MODEL),
-                    ('read_serial', TYPE_READ, CMD_SERIAL),
-                    ('read_fwver', TYPE_READ, CMD_FWVER),
-                    ('read_devtype', TYPE_READ, CMD_DEVTYPE),
-                    ('read_num_chan', TYPE_READ, CMD_CHANCT),
-                    ('read_alarms', TYPE_READ, CMD_ALARM),
-                    ('read_enable', TYPE_READ, CMD_ENABLE)]
-
-        # pre-built packages that don't need extra
-        self.log.debug('Building control channel packet dictionary')
-        self.packets = {p[0]: CommandPacket(channel=self.id,
-                                            op_type=p[1],
-                                            op_code=p[2])
-                        for p in self.cmd if p[1] in [TYPE_READ, TYPE_MIN, TYPE_MAX]}
 
         self.alarm_state = {n: False for n in range(NUM_ALARMS)}
 
     def initialize(self, device):
         """Once device attached, channel can be initiated using data from device."""
         self.log.debug('Initializing status channel')
+        assert device is not None
         self.device = device
 
         # loop to avoid initial troubles in communication (device boots?)
         for n in range(MAX_CONN_RETRIES):
             time.sleep(TIMEOUT/1000.)  # sleep a moment to let device boot up
-            e, rp = self.set_remote_enable(START_REMOTE_ENABLE_STATE)
-            if rp is not None:
+            rp = self.set_remote_enable(START_REMOTE_ENABLE_STATE)
+            if rp.end_code is ERR_OK:
                 break
             else:
                 self.log.debug("Failed conversation attempt {0:d}".format(n+1))
@@ -93,9 +91,10 @@ class StatusChannel(Channel):
     def update_alarms(self):
         """Update alarm flags."""
         self.log.debug('Updating control channel alarms')
-        e, rp = self.get('read_alarms')
-        if e is not None:
-            self.alarm_state = {n: rp.data[n] == FLAG_ON for n in range(NUM_ALARMS)}
+        response = self.read(CMD_ALARM)
+        if response.end_code is ERR_OK:
+            self.log.debug("Alarm update response: {}".format(map(ord, list(response.data.strip()))))
+            self.alarm_state = {n: response.data[n] == FLAG_ON for n in range(NUM_ALARMS)}
         else:
             self.alarm_state = None
 
@@ -165,12 +164,9 @@ class StatusChannel(Channel):
         return self.alarm_state[3]
 
     def set_remote_enable(self, state):
-        packet = CommandPacket(op_type=TYPE_WRITE,
-                               op_code=CMD_ENABLE,
-                               data=[FLAG_ON if state else FLAG_OFF])
-        e, rp = self.push(packet)
+        rp = self.write(CMD_ENABLE, data=chr(FLAG_ON if state else FLAG_OFF))
         self.log.debug('Remote enable set to: {}'.format(state))
-        return e, rp
+        return rp
 
     def close(self):
         # When exiting, disable the remote enable flag to reduce risk of accidental pew pew!
@@ -263,21 +259,34 @@ class LaserChannel(Channel):
         self.set_limit(value)
 
     def set_limit(self, value):
-        packet = CommandPacket(channel=self.id,
-                               op_type=TYPE_WRITE,
-                               op_code=CMD_LIMIT,
-                               data=[ord(c) for c in str(float(value))])
-        rp = self.device.transceive(packet)
+        pass
+        # packet = CommandPacket(channel=self.id,
+        #                        op_type=TYPE_WRITE,
+        #                        op_code=CMD_LIMIT,
+        #                        data=[ord(c) for c in str(float(value))])
+        # rp = self.device.transceive(packet)
 
     def get_setpoint(self):
-        return self._set * 1000.
+        pass
+        # return self._set * 1000.
 
     def set_setpoint(self, value):
-        packet = CommandPacket(channel=self.id,
-                               op_type=TYPE_WRITE,
-                               op_code=CMD_SETPOINT,
-                               data=[ord(c) for c in str(float(value))])
-        e, rp = self.push(packet)
+        pass
+        # packet = CommandPacket(channel=self.id,
+        #                        op_type=TYPE_WRITE,
+        #                        op_code=CMD_SETPOINT,
+        #                        data=[ord(c) for c in str(float(value))])
+        # e, rp = self.push(packet)
 
     def close(self):
         self.zero(AUTO_EXIT_ZERO_LIMIT, AUTO_EXIT_ZERO_SET)
+
+
+if __name__ == "__main__":
+    import logging
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    from Devices import USB
+    dev = USB()
+    sc = StatusChannel()
+    sc.initialize(dev)
+    sc.update()

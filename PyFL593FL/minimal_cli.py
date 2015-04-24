@@ -25,12 +25,15 @@ if __name__ == '__main__':
     if rsp:
         print "Response:", rsp
 
+    rsp = dev.transceive("STATUS READ ALARM")
+    if rsp:
+        print "Response:", rsp
+
     print "'q' to exit"
     cmd = raw_input(">> ")
     while cmd.upper() != 'Q':
-        if rsp:
-            print "Response:", rsp
         rsp = dev.transceive(cmd)
+        print "Response:", rsp
         cmd = raw_input(">> ")
 
 

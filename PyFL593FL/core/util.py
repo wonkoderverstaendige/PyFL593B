@@ -24,12 +24,14 @@ positionals = [CHANNEL_DICT, OP_TYPE_DICT, OP_CODE_DICT]
 
 def encode_command(command):
     # TODO: Checking of proper command sequence?
-    assert len(command) >= 3  # at least Channel, OpType and OpCode, data is optional
     command = command.upper()
     try:
         words = command.upper().split(' ')
+        assert len(words) >= 3  # at least Channel, OpType and OpCode, data is optional
         code_list = [DEV_TYPE]
-        code_list.extend([positionals[pos][word] for pos, word in enumerate(words)])
+        code_list.extend([positionals[pos][word] for pos, word in enumerate(words[0:3])])
+        if len(words) > 3:
+            code_list.extend(map(ord, " ".join(words[3:])))
         if len(code_list) < EP_PACK_OUT:
             code_list.extend([0x0] * (EP_PACK_OUT-len(code_list)))
 
@@ -60,8 +62,8 @@ def decode_response(response):
     op_code = OP_CODE_DICT_REV[response[3]]
     end_code = END_CODE_DICT[response[4]]
     data = response[5:]
-
-    return ' '.join([channel, op_type, op_code, end_code, data.tostring().strip()])
+    response_string = ' '.join([channel, op_type, op_code, end_code, data.tostring().strip()])
+    return response_string
 
 
 def unpack_string(string, has_end_code=False):
@@ -69,11 +71,11 @@ def unpack_string(string, has_end_code=False):
     try:
         words = list(reversed(string.upper().split(" ")))
         packet = namedtuple("packet", "channel, op_code, end_code, data, string")
-        packet.string = string.upper()
+        packet.command = string.upper()
         packet.channel = CHANNEL_DICT[words.pop()]
         packet.op_type = OP_TYPE_DICT[words.pop()]
         packet.op_code = OP_CODE_DICT[words.pop()]
-        packet.end_code = END_CODE_DICT[words.pop()] if has_end_code else None
+        packet.end_code = END_CODE_DICT_REV[words.pop()] if has_end_code else None
         packet.data = ' '.join(reversed(words))  # rest is data, which may contain spaces
         return packet
     except IndexError:

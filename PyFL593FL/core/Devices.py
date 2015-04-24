@@ -41,12 +41,12 @@ class Device(object):
         """Open connection to device."""
         self.device = None
 
-    def transceive(self, packet):
+    def transceive(self, command):
         """This method was aptly named by Tim Schroeder, and is generously provided for with cookies by the same.
 
         For more information on the adopt-a-method program, please contact the author.
         """
-        return packet
+        return command
 
     def reset(self):
         """Reset the device, either to recover or prevent fault states on shutdown."""
@@ -132,8 +132,10 @@ class USB(Device):
     def transceive(self, command):
         """Send a command string and receive response."""
         # Write coded command
+        encoded_command = encode_command(command)
+        self.log.debug("Command: {}, encoded: {}".format(command, encoded_command))
         try:
-            self.endpoint_out.write(encode_command(command))
+            self.endpoint_out.write(encoded_command)
         except usb.USBError as error:
             self.log.error("Could not write to USB: {:s}".format(error))
             raise error

@@ -13,14 +13,21 @@ as long as the can be transformed into an acceptable command string, and
 be constructed from a return string.
 """
 
+import argparse
 import logging
-from core.Devices import USB
+from core.Devices import USB, Dummy
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log = logging.getLogger(__name__)
-    log.info("Starting up...")
-    with USB() as dev:
+
+    parser = argparse.ArgumentParser('Mini REPL for FL593FL laser diode driver eval board.')
+    parser.add_argument('-d', '--dummy', help='Use dummy device instead of USB connection.', action='store_true')
+
+    cli_args = parser.parse_args()
+
+    device_class = Dummy if cli_args.dummy else USB
+    with device_class() as dev:
         # Example usages:
         rsp = dev.transceive("STATUS READ MODEL")
         if rsp:

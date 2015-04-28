@@ -7,12 +7,25 @@ Created on 21 Apr 2015 21:40
 Run webserver connecting to USB, send command/response from/to browser via websocket.
 """
 
+import argparse
+import logging
 from web.server import main
-from core.Devices import USB
+from core.Devices import USB, Dummy
+from core.constants import LOG_LVL_VERBOSE
 
 if __name__ == '__main__':
-    import logging
-    logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    dev = USB()
+    parser = argparse.ArgumentParser('Mini REPL for FL593FL laser diode driver eval board.')
+    parser.add_argument('-d', '--dummy', help='Use dummy device instead of USB connection.', action='store_true')
+    parser.add_argument('-v', '--verbose', help='Enable packet-level logging.', action='store_true')
 
-    main(dev)
+    cli_args = parser.parse_args()
+
+    logging.addLevelName(LOG_LVL_VERBOSE, "VERBOSE")
+    logging.basicConfig(level=LOG_LVL_VERBOSE if cli_args.verbose else logging.DEBUG,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    log = logging.getLogger(__name__)
+
+    device_class = Dummy if cli_args.dummy else USB
+
+    with device_class() as dev:
+        main(dev)

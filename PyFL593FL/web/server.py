@@ -40,7 +40,7 @@ class MainHandler(tornado.web.RequestHandler):
 class ChatSocketHandler(tornado.websocket.WebSocketHandler):
     waiters = set()
     cache = []
-    cache_size = 200
+    cache_size = 5
     device = None
 
     def get_compression_options(self):
@@ -77,7 +77,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
         ChatSocketHandler.update_cache(chat)
         ChatSocketHandler.send_updates(chat)
 
-        if device is not None:
+        if self.device is not None:
             response = self.to_chat(self.device.transceive(chat["body"]), json=False)
             ChatSocketHandler.update_cache(response)
             ChatSocketHandler.send_updates(response)

@@ -13,27 +13,33 @@ as long as the can be transformed into an acceptable command string, and
 be constructed from a return string.
 """
 
+import logging
 from core.Devices import USB
 
 if __name__ == '__main__':
-    import logging
-    logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    dev = USB()
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    log = logging.getLogger(__name__)
+    log.info("Starting up...")
+    with USB() as dev:
+        # Example usages:
+        rsp = dev.transceive("STATUS READ MODEL")
+        if rsp:
+            print "Response:", rsp
 
-    # EXAMPLE:
-    rsp = dev.transceive("STATUS READ MODEL")
-    if rsp:
-        print "Response:", rsp
+        rsp = dev.transceive("STATUS READ ALARM")
+        if rsp:
+            print "Response:", rsp
 
-    rsp = dev.transceive("STATUS READ ALARM")
-    if rsp:
-        print "Response:", rsp
-
-    print "'q' to exit"
-    cmd = raw_input(">> ")
-    while cmd.upper() != 'Q':
-        rsp = dev.transceive(cmd)
-        print "Response:", rsp
+        # Mini REPL
+        print "'q' to exit"
         cmd = raw_input(">> ")
+        while cmd.upper() != 'Q':
+            try:
+                rsp = dev.transceive(cmd)
+                print "<-", rsp
+            except ValueError as error:
+                log.debug(error)
+
+            cmd = raw_input(">> ")
 
 

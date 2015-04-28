@@ -16,15 +16,19 @@ be constructed from a return string.
 import argparse
 import logging
 from core.Devices import USB, Dummy
+from core.constants import LOG_LVL_VERBOSE
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    log = logging.getLogger(__name__)
-
     parser = argparse.ArgumentParser('Mini REPL for FL593FL laser diode driver eval board.')
     parser.add_argument('-d', '--dummy', help='Use dummy device instead of USB connection.', action='store_true')
+    parser.add_argument('-v', '--verbose', help='Enable packet-level logging.', action='store_true')
 
     cli_args = parser.parse_args()
+
+    logging.addLevelName(LOG_LVL_VERBOSE, "VERBOSE")
+    logging.basicConfig(level=LOG_LVL_VERBOSE if cli_args.verbose else logging.DEBUG,
+                        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    log = logging.getLogger(__name__)
 
     device_class = Dummy if cli_args.dummy else USB
     with device_class() as dev:

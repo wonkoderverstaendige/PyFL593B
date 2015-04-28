@@ -11,6 +11,7 @@ http://www.teamwavelength.com/downloads/datasheets/fl593.pdf
 
 Note: all codes are < 0x00FF, so the first Byte of each field (other than data) is always 0!
 """
+LOG_LVL_VERBOSE = 9
 
 # DEVICE BEHAVIOR
 TIMEOUT = 100  # default timeout of read/write is 100 ms

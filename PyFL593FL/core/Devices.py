@@ -28,6 +28,7 @@ except ImportError:
 class Device(object):
     """Generic device interface class."""
     def __init__(self):
+        logging.addLevelName(LOG_LVL_VERBOSE, "VERBOSE")
         self.log = logging.getLogger(__name__)
         self.len_transmit = None
         self.len_receive = None
@@ -132,7 +133,7 @@ class USB(Device):
         """Send a command string and receive response."""
         # Write coded command
         encoded_command = util.encode_command(command)
-        self.log.debug("Command: {}, encoded: {}".format(command, encoded_command))
+        self.log.log(LOG_LVL_VERBOSE, "Command: {}, encoded: {}".format(command, encoded_command))
         try:
             self.endpoint_out.write(encoded_command)
         except usb.USBError as error:
@@ -148,6 +149,7 @@ class USB(Device):
         except usb.USBError as error:
             self.log.error("No response: {:s}".format(error))
             raise error
+        self.log.log(LOG_LVL_VERBOSE, "Response: {}, encoded: {}".format(util.decode_response(response), response))
 
         return util.decode_response(response)
 

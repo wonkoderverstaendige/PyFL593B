@@ -36,8 +36,8 @@ EXIT_REMOTE_ENABLE_STATE = False  # For safety reasons, disable on exit
 # |----------|----------|----------|---------|---------|----------|-------------------------------------------------|
 # | Offset:  |   0  1   |   2  3   |  4  5   |  6  7   |   8  9   | 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 |
 
-##### !!! Contrary to documentation, fields other than "Data" are only of size 1 (Byte), not 2!!! This means all
-##### !!! offsets are wrong.
+# !!! Contrary to documentation, fields other than "Data" are only of size 1 (Byte), not 2!!! This means all
+# !!! offsets are wrong.
 
 # DEVICE CONSTANTS
 VENDOR_ID = 0x1a45
@@ -122,36 +122,38 @@ OP_CODE_DICT = {
     'RPD': CMD_RPD,
     'CAL_ISCALE': CMD_CAL_ISCALE,
 }
-# TODO: Expiring memoization to priorize updating quickly changing values
+# TODO: Expiring memoization to prioritize updating quickly changing values
 # Should make access of properties from the GUI less painful
 # but cap request rate to 10 ms, i.e. ~ once per > 60fps refresh
-# should allow to read from memoized channels withhout having to worry about
+# should allow to read from memoized channels without having to worry about
 # repeated accesses and keeping them up-to-date internally
 # see utils.py:memoize_with_expiry decorator
 EXPIRY_NEVER = -1.0
 EXPIRY_FAST = 0.010
+EXPIRY_SLOW = 1.0
+EXPIRY_MEDIUM = 0.1
 EXPIRY_IMMEDIATE = 0.0
 EXPIRY_DICT = {
     CMD_MODEL: EXPIRY_NEVER,
     CMD_SERIAL: EXPIRY_NEVER,
     CMD_FWVER: EXPIRY_NEVER,
     CMD_DEVTYPE: EXPIRY_NEVER,
-    CMD_CHANCT: EXPIRY_NEVER,
+    CMD_CHANCT: EXPIRY_SLOW,  # FIXME: Is this affected by the Mode?
     CMD_IDENTIFY: EXPIRY_IMMEDIATE,
     CMD_SAVE: EXPIRY_IMMEDIATE,
     CMD_PASSWD: EXPIRY_IMMEDIATE,
     CMD_REVERT: EXPIRY_IMMEDIATE,
     CMD_RECALL: EXPIRY_IMMEDIATE,
     CMD_ALARM: EXPIRY_IMMEDIATE,
-    CMD_SETPOINT: 0.1,
-    CMD_LIMIT: 0.1,
-    CMD_MODE: 1.0,
-    CMD_TRACK: 1.0,
+    CMD_SETPOINT: EXPIRY_MEDIUM,
+    CMD_LIMIT: EXPIRY_MEDIUM,
+    CMD_MODE: EXPIRY_SLOW,
+    CMD_TRACK: EXPIRY_SLOW,
     CMD_IMON: EXPIRY_IMMEDIATE,
     CMD_PMON: EXPIRY_IMMEDIATE,
-    CMD_ENABLE: 0.1,
-    CMD_RPD: 1,
-    CMD_CAL_ISCALE: 1,
+    CMD_ENABLE: EXPIRY_MEDIUM,
+    CMD_RPD: EXPIRY_SLOW,
+    CMD_CAL_ISCALE: EXPIRY_SLOW,
 }
 OP_CODE_DICT_REV = {v: k for k, v in OP_CODE_DICT.iteritems()}
 
@@ -225,7 +227,3 @@ END_CODE_DESC_DICT = {
 
 # DATA (data ignored for types read, min and max)
 LEN_DATA = 16  # length data field in bytes
-
-if __name__ == "__main__":
-    from util import encode_command, decode_command
-    print encode_command("")

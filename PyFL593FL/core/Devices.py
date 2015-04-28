@@ -13,7 +13,7 @@ Dummy: Virtual device for debugging. Returns semi-random values
 
 import logging
 from constants import *
-from util import encode_command, decode_response, unpack_string
+import util
 try:
     import usb
 except ImportError:
@@ -35,7 +35,7 @@ class Device(object):
         self.num_channels = MAX_NUM_CHAN
 
     def __enter__(self):
-        pass
+        return self
 
     def open(self, *args, **kwargs):
         """Open connection to device."""
@@ -112,27 +112,26 @@ class USB(Device):
         assert self.endpoint_in.wMaxPacketSize == EP_PACK_IN
         assert self.endpoint_out.wMaxPacketSize == EP_PACK_OUT
 
-    def show_configurations(self):
+    def _show_configurations(self):
         """Print/log all available configurations."""
         for c, cfg in enumerate(self.device):
             self.log.debug('Configuration %d: %s' % (c, str(cfg.bConfigurationValue)))
 
-    def show_interfaces(self):
+    def _show_interfaces(self):
         """Print/log all available interfaces."""
         for i, interface in enumerate(self.config):
             self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
 
-    def show_endpoints(self):
+    def _show_endpoints(self):
         """Print/log all available endpoints. Not sure this is actually a thing..."""
         # FIXME: Copy'n'paste without change from interfaces... lookup endpoint enumeration!
+        self.log.error("Shouldn't be called by anyone!")
         raise NotImplementedError
-        # for i, interface in enumerate(self.config):
-        #     self.log.info('Interface %d: %s' % (i, str(interface) + '\n'))
 
     def transceive(self, command):
         """Send a command string and receive response."""
         # Write coded command
-        encoded_command = encode_command(command)
+        encoded_command = util.encode_command(command)
         self.log.debug("Command: {}, encoded: {}".format(command, encoded_command))
         try:
             self.endpoint_out.write(encoded_command)
@@ -150,12 +149,11 @@ class USB(Device):
             self.log.error("No response: {:s}".format(error))
             raise error
 
-        return decode_response(response)
+        return util.decode_response(response)
 
     def close(self):
         if self.device is not None:
             self.device.reset()
-            self.device.close()
         self.device = None
 
 
@@ -168,58 +166,7 @@ class Dummy(Device):
         super(Dummy, self).__init__()
 
     def transceive(self, command):
-        return fake_data(command)
-
-    def fake_data(self, command):
-        packet = unpack_string(command)
-        if packet.op_type == OP_TYPE_READ:
-            print "YEP! WE WANT TO READ!!!"
-        else:
-            print "NOPE!"
-
-            # data_dict = {
-            #     CMD_MODEL: list('Dummy Device'),
-            #     CMD_FWVER: list('0.1'),
-            #     CMD_CHANCT: [2],
-            #     CMD_IMON: [100.0],
-            #     CMD_PMON: [50.0],
-            #     CMD_LIMIT: [123.0],
-            #     CMD_SETPOINT: [120.0],
-            #     CMD_MODE: [1],
-            #     CMD_ALARM: [FLAG_OFF]*8
-            # }
-            # pack_list = [DEVICE_TYPE,
-            #              packet.channel,
-            #              packet.op_type,
-            #              packet.op_code]
-            # pack_list.extend(data_dict[packet.op_code])
-            # self.array.fromlist(,
-            #                      ,
-            #                      packet.data])
-            # return self.array
-
-        if packet.op_type == TYPE_WRITE:
-            pack_list = [DEVICE_TYPE, packet.channel, packet.op_type, packet.op_code, ERR_OK]
-            pack_list.extend(packet.data)
-            pack_list.extend([0x00]*(EP_PACK_OUT-len(pack_list)))
-            self.array.fromlist(pack_list)
-            return self.array
-            # data_dict = {
-            #     CMD_LIMIT: 123.0,
-            #     CMD_SETPOINT: 120.0,
-            #     CMD_MODE: 1,
-            #     CMD_ALARM: [FLAG_OFF]*8,
-            #     CMD_ENABLE: FLAG_ON
-            # }
-            # pack_list = [DEVICE_TYPE,
-            #              packet.channel,
-            #              packet.op_type,
-            #              packet.op_code]
-            # pack_list.extend()
-            # self.array.fromlist()
-            # data_dict[packet.op_code],
-            #                      packet.data])
-            # return self.array
+        return util.fake_data(command)
 
 
 class Socket(Device):

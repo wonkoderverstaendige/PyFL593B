@@ -19,6 +19,7 @@ import time
 from array import array
 from constants import *
 from collections import namedtuple
+import random
 positionals = [CHANNEL_DICT, OP_TYPE_DICT, OP_CODE_DICT]
 
 
@@ -67,16 +68,18 @@ def decode_response(response):
 
 
 def unpack_string(string, has_end_code=False):
-    """Make string into a dictionary with fields"""
+    """Make string into a namedtuple for easier access"""
     try:
         words = list(reversed(string.upper().split(" ")))
-        packet = namedtuple("packet", "channel, op_code, end_code, data, string")
+        packet = namedtuple("packet", "channel, op_code, op_type, end_code, data, string")
         packet.command = string.upper()
         packet.channel = CHANNEL_DICT[words.pop()]
         packet.op_type = OP_TYPE_DICT[words.pop()]
         packet.op_code = OP_CODE_DICT[words.pop()]
         packet.end_code = END_CODE_DICT_REV[words.pop()] if has_end_code else None
         packet.data = ' '.join(reversed(words))  # rest is data, which may contain spaces
+        packet.data = packet.data.strip('\x00')
+        packet.string = string
         return packet
     except IndexError:
         raise ValueError("Incomplete packet: {}".format(string))
@@ -87,8 +90,7 @@ def memoize_with_expiry(expiry_time=None, _cache=None, num_args=None):
 
     Cache can be external if provided via [_cache] or internal.
     Expiration time will be read from the FL593FL expiry time dictionary if not given. If negative,
-    cached values never expire (e.g. constant values like MODEL
-    """
+    cached values never expire (e.g. constant values like MODEL)"""
     # FIXME: Using keyword argument is separate key from positional argument call
     # to fix: read argument keywords from function and ALWAYS generate the frozen set by sorting them out
     def _decorating_wrapper(func):
@@ -106,7 +108,7 @@ def memoize_with_expiry(expiry_time=None, _cache=None, num_args=None):
             if key in cache:
                 result, timestamp = cache[key]
                 if expiry_time is None:
-                    exp = EXPIRY_DICT[kwargs["op_code"] if "op_code" in kwargs else args[0]]
+                    exp = EXPIRY_DICT[kwargs['op_code'] if 'op_code' in kwargs else args[1]]
                 else:
                     exp = expiry_time
                 age = time.time() - timestamp
@@ -118,21 +120,58 @@ def memoize_with_expiry(expiry_time=None, _cache=None, num_args=None):
         return _caching_wrapper
     return _decorating_wrapper
 
+
+@memoize_with_expiry(expiry_time=1.0)
+def fake_data(command, chance_to_fail=None, end_code=ERR_OK):
+    packet = unpack_string(command)
+
+    channel = packet.channel
+    op_type = packet.op_type
+    op_code = packet.op_code
+    end_code = end_code
+    if chance_to_fail is not None and random.random() > chance_to_fail:
+        end_code = random.choice(END_CODE_DICT) if end_code is None else end_code
+        raise ValueError("Fake failure with error #{}".format(end_code))
+
+    if op_type == TYPE_READ:
+        data_dict = {
+            CMD_MODEL: 'FL593-Dummy',
+            CMD_FWVER: '42.0.0',
+            CMD_CHANCT: '2',
+            CMD_IMON: "{:.1f}".format(random.random()*120),
+            CMD_PMON: "{:.1f}".format(random.random()*120),
+            CMD_LIMIT: "{:.1f}".format(random.random()*120),
+            CMD_SETPOINT: "{:.1f}".format(random.random()*120),
+            CMD_MODE: '1',
+            CMD_ALARM: "".join([chr(random.choice([FLAG_OFF, FLAG_ON])) for _ in range(8)])
+        }
+        data = data_dict[op_code]
+
+    elif op_type == TYPE_WRITE:
+        data = packet.data
+    else:
+        raise NotImplementedError("No fake data for op_type {}".format(op_type))
+
+    return ' '.join(map(str, [CHANNEL_DICT_REV[channel], OP_TYPE_DICT_REV[op_type],
+                              OP_CODE_DICT_REV[op_code], END_CODE_DICT[end_code], data]))
+
+
 if __name__ == "__main__":
+    # FIXME: Move into tests
     cmd = "STATUS READ MODEL"
-    ecmd = encode_command(cmd)
+    encoded_cmd = encode_command(cmd)
     print cmd, ':'
-    print ecmd, ecmd.tostring().encode('hex')
+    print encoded_cmd, encoded_cmd.tostring().encode('hex')
     print unpack_string(cmd)
     try:
         unpack_string("STATUS READ")  # incomplete command
-    except ValueError:
-        pass
+    except ValueError as error:
+        print error
     else:
         raise AssertionError("Should have been illegal string!")
 
     @memoize_with_expiry(None)
-    def read(op_code):
+    def read(_):
         return time.time()
 
     first = read(CMD_IMON)

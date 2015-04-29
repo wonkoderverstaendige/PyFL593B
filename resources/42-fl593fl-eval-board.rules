@@ -1,0 +1,7 @@
+# Rules for root-less access to the USB FL593FL laser diode driver evaluation board
+
+# For FedoraCore 5 and similar:
+SUBSYSTEM=="usb_device", SYSFS{idVendor}=="1a45", SYSFS{idProduct}=="2001", MODE:="0666"
+
+# For FedoraCore 7 and similar:
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1a45", ATTRS{idProduct}=="2001", MODE:="0666"

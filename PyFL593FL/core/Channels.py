@@ -125,7 +125,7 @@ class StatusChannel(Channel):
     def get_num_channels(self):
         """Number of channels currently supported by the device. Switching modes may affect that."""
         response = self.read(CMD_CHANCT)
-        return response.data
+        return int(response.data)
 
     def get_output_enable(self):
         """Output enabled when all three enable conditions are met:

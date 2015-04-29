@@ -18,6 +18,7 @@ class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):
         self.setupUi(self)
         self.parent = parent
         self.device = None
+        self.status_channel = None
 
         # Control widget
         self.push_REN.toggled.connect(self.toggle_remote_enable)
@@ -25,16 +26,16 @@ class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):
     def initialize(self, device):
         assert device is not None
         self.device = None
-        self.status = device.status
-        if self.status.get_model() is not None:
-            self.lbl_dev_name.setText(self.status.get_model())
-        if self.status.get_fw_version() is not None:
-            self.lbl_fw_ver.setText(self.status.get_fw_version())
-        if self.status.get_serial() is not None:
-            self.lbl_serial_num.setText(self.status.get_serial())
+        self.status_channel = device.status
+        if self.status_channel.get_model() is not None:
+            self.lbl_dev_name.setText(self.status_channel.get_model())
+        if self.status_channel.get_fw_version() is not None:
+            self.lbl_fw_ver.setText(self.status_channel.get_fw_version())
+        if self.status_channel.get_serial() is not None:
+            self.lbl_serial_num.setText(self.status_channel.get_serial())
 
     def refresh(self):
-        if self.status is None:
+        if self.status_channel is None:
             return
         self.refresh_enable_flags()
 
@@ -43,20 +44,18 @@ class StatusWidget(QtGui.QWidget, StatusWidgetUi.Ui_Status):
 
     def refresh_enable_flags(self):
         """Update enable flag indicators for local, external and remote flags."""
+        self.toggle_laser_warning(self.status_channel.get_output_enable())
 
-        self.toggle_laser_warning(self.device.control.output_enable)
-
-        self.set_enable_icon(self.lbl_external_icon, self.status.external_enable)
-        self.set_enable_icon(self.lbl_output_icon, self.status.output_enable)
-        self.set_enable_icon(self.lbl_local_icon, self.status.local_enable)
-        self.push_REN.setChecked(self.status.remote_enable)
+        self.set_enable_icon(self.lbl_external_icon, self.status_channel.get_external_enable())
+        self.set_enable_icon(self.lbl_output_icon, self.status_channel.get_output_enable())
+        self.set_enable_icon(self.lbl_local_icon, self.status_channel.get_local_enable())
+        self.push_REN.setChecked(self.status_channel.get_remote_enable())
 
     def toggle_remote_enable(self, state):
         """Toggle the state of the remote enable flag when toggling the checkbutton."""
-        if self.status is None:
-            return
-        self.log.debug('Setting remote enable {0:s}'.format('ON' if state else 'OFF'))
-        self.status.remote_enable = state
+        if self.status_channel is not None:
+            self.log.debug('Setting remote enable {0:s}'.format('ON' if state else 'OFF'))
+            self.status_channel.set_remote_enable(state)
 
     def toggle_laser_warning(self, state):
         if self.lbl_laser_warning.isEnabled() != state:

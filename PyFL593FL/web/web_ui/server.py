@@ -24,17 +24,18 @@ class Application(tornado.web.Application):
             (r"/chatsocket", ChatSocketHandler),
         ]
         settings = dict(
-            cookie_secret="MYVERYOWNCOOKIESECRET",  # TODO
+            cookie_secret="MYVERYOWNCOOKIESECRET",  # TODO Read from file
             template_path=os.path.join(os.path.dirname(__file__), "templates"),
             static_path=os.path.join(os.path.dirname(__file__), "static"),
             xsrf_cookies=True,
+            compiled_template_cache=False,
         )
         tornado.web.Application.__init__(self, handlers, **settings)
 
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render("index.html", messages=ChatSocketHandler.cache)
+        self.render("index.html")  # , messages=ChatSocketHandler.cache
 
 
 class ChatSocketHandler(tornado.websocket.WebSocketHandler):
@@ -90,6 +91,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
 
 def main(device=None):
+    tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
     ChatSocketHandler.device = device
@@ -97,5 +99,4 @@ def main(device=None):
 
 
 if __name__ == "__main__":
-    tornado.options.parse_command_line()
     main()

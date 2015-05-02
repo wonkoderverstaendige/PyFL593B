@@ -8,6 +8,8 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="materialize/css/materialize.min.css">
+    <link rel="stylesheet" href="nouislider/css/jquery.nouislider.min.css">
+    <link rel="stylesheet" href="nouislider/css/jquery.nouislider.pips.min.css">
     <link rel="stylesheet" href="style.css" type="text/css" media="screen,projection"/>
   </head>
 
@@ -15,7 +17,7 @@
     <nav class="blue lighten-1" role="navigation">
       <div class="nav-wrapper container">
         <a id="logo-container" href="#" class="brand-logo">PyFL593FL</a>
-        <ul class="right hide-on-med-and-down">
+        <ul class="right hide-on-small-and-down">
           <li><a class="modal-trigger" href="#modal_device">Device</a></li>
           <li><a class="modal-trigger" href="#modal_settings">Settings</a></li>
           <li><a class="modal-trigger" href="#modal_about">About</a></li>
@@ -64,19 +66,19 @@
           <br><br><br>
           <ul class="collection">
             <li class="collection-item">
-              <a id="REN" class="btn-floating red"><i class="large mdi-content-clear white-text"></i></a>
+              <a id="REN" class="btn-floating red enable_btn"><i class="large mdi-content-clear white-text"></i></a>
               <span class="title">Remote</span>
             </li>
             <li class="collection-item">
-              <a id="LEN" class="btn-floating disabled green"><i class="large mdi-action-done white-text"></i></a>
+              <a id="LEN" class="btn-floating disabled green enable_btn"><i class="large mdi-action-done white-text"></i></a>
               <span class="title">Local</span>
             </li>
             <li class="collection-item">
-              <a id="XEN" class="btn-floating disabled red"><i class="large mdi-content-clear white-text"></i></a>
+              <a id="XEN" class="btn-floating disabled red enable_btn"><i class="large mdi-content-clear white-text"></i></a>
               <span class="title">External</span>
             </li>
             <li class="collection-item">
-              <a id="OEN" class="btn-floating disabled green"><i class="large mdi-action-done white-text"></i></a>
+              <a id="OEN" class="btn-floating disabled green enable_btn"><i class="large mdi-action-done white-text"></i></a>
               <span class="title">Output</span>
             </li>
           </ul>
@@ -119,20 +121,27 @@
                   <div class="card-panel">
                     <h5 class="center">Channel 1</h5>
                     <div class="divider"></div>
-                    <br><br>
-                    <form action="#">
-                      <p class="range-field">
-                        <input type="range" min="0" max="250"/>
-                      </p>
-                      <p class="range-field">
-                        <input type="range" min="0" max="250"/>
-                      </p>
-                    </form>
-                    <div class="progress">
-                        <div class="determinate" style="width: 70%"></div>
+                    <div class="row">
+                      <div class="col s3 center"><h6>Set</h6></div>
+                      <div class="col s3 center"><h6>Limit</h6></div>
+                      <div class="col s3 center"><h6>I<sub>mon</sub></h6></div>
+                      <div class="col s3 center"><h6>P<sub>mon</sub></h6></div>
                     </div>
-                    <div class="progress">
-                        <div class="determinate" style="width: 90%"></div>
+                    <div class="row">
+                      <form action="#">
+                        <div class="col s3">
+                          <div id="setpoint" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="limit" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="imon" class="slider prog"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="pmon" class="slider prog"></div>
+                        </div>
+                        </form>
                     </div>
                   </div>
                 </div>
@@ -140,30 +149,41 @@
                   <div class="card-panel">
                     <h5 class="center">Channel 2</h5>
                     <div class="divider"></div>
-                    <br><br>
-                    <form action="#">
-                        <p class="range-field">
-                          <input type="range" min="0" max="250"/>
-                        </p>
-                        <p class="range-field">
-                          <input type="range" min="0" max="250"/>
-                        </p>
-                    </form>
-                    <div class="progress">
-                        <div class="determinate" style="width: 20%"></div>
+                    <div class="row">
+                      <div class="col s3 center"><h6>Set</h6></div>
+                      <div class="col s3 center"><h6>Limit</h6></div>
+                      <div class="col s3 center"><h6>I<sub>mon</sub></h6></div>
+                      <div class="col s3 center"><h6>P<sub>mon</sub></h6></div>
                     </div>
-                    <div class="progress">
-                        <div class="determinate" style="width: 40%"></div>
+                    <div class="row">
+                      <form action="#">
+                        <div class="col s3">
+                          <div id="setpoint" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="limit" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="imon" class="slider prog"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="pmon" class="slider prog"></div>
+                        </div>
+                      </form>
                     </div>
-                    </div>
-                </div>
-                <div class="col s12 gray">
-                  <div class="card-panel">
-                    Log-scale graph of current/power, if available.
-                    <br><br><br><br>
                   </div>
                 </div>
-              </div>
+
+                <div class="col s12">
+				    <form action="a/message/new" method="post" id="commandform">
+			        <div class="input-field col s12">
+			          <i class="mdi-communication-textsms prefix"></i>
+			          <input name="command" id="command" type="text" class="validate">
+			          <label for="command">Command</label>
+			        </div>
+				    </form>
+				    </div>
+				  </div>
             </div>
 
             <!-- Immediate configuration -->
@@ -216,6 +236,7 @@
 
     <script type="text/javascript" src="jquery/jquery.min.js"></script>
     <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+    <script type="text/javascript" src="nouislider/js/jquery.nouislider.all.min.js"></script>
     <script type="text/javascript" src="main.js"></script>
 
   </body>

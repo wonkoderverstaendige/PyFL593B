@@ -9,14 +9,15 @@ Run webserver connecting to USB, send command/response from/to browser via webso
 
 import argparse
 import logging
-from web.server import main
+from web.web_ui.server import main
 from core.Devices import USB, Dummy
 from core.constants import LOG_LVL_VERBOSE
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('Mini REPL for FL593FL laser diode driver eval board.')
+    parser = argparse.ArgumentParser('Web interface for FL593FL laser diode driver eval board.')
     parser.add_argument('-d', '--dummy', help='Use dummy device instead of USB connection.', action='store_true')
     parser.add_argument('-v', '--verbose', help='Enable packet-level logging.', action='store_true')
+    parser.add_argument('-p', '--port', help="Port for web server.")
 
     cli_args = parser.parse_args()
 
@@ -28,4 +29,5 @@ if __name__ == '__main__':
     device_class = Dummy if cli_args.dummy else USB
 
     with device_class() as dev:
+        # FIXME: pas on parameters (e.g. port)
         main(dev)

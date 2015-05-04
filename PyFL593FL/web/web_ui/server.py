@@ -8,8 +8,8 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import tornado.websocket
+import json
 import os.path
-import uuid
 
 from tornado.options import define, options
 
@@ -35,6 +35,8 @@ class Application(tornado.web.Application):
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
+        # TODO: Render last notes
+        # TODO: Get full update of device to start fully parameterized
         self.render("index.html")  # , messages=ChatSocketHandler.cache
 
 
@@ -57,41 +59,36 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
         ChatSocketHandler.waiters.remove(self)
 
     @classmethod
-    def update_cache(cls, chat):
-        cls.cache.append(chat)
+    def update_cache(cls, item):
+        cls.cache.append(item)
         if len(cls.cache) > cls.cache_size:
             cls.cache = cls.cache[-cls.cache_size:]
 
     @classmethod
-    def send_updates(cls, chat):
+    def send_updates(cls, item):
         logging.info("sending message to {} waiters".format(len(cls.waiters)))
         for waiter in cls.waiters:
             try:
-                waiter.write_message(chat)
+                waiter.write_message(item)
             except:
                 logging.error("Error sending message", exc_info=True)
 
     def on_message(self, message):
         logging.info("Got message {}".format(message))
+        assert self.device is not None
 
-        chat = self.to_chat(message)
-        ChatSocketHandler.update_cache(chat)
-        ChatSocketHandler.send_updates(chat)
+        packet = self.device.transceive(self.decode_message(message), unpack=True)
+        logging.debug("Got {}".format(repr(packet)))
+        response = json.dumps({"response": packet._asdict()})
+        ChatSocketHandler.update_cache(response)
+        ChatSocketHandler.send_updates(response)
 
-        if self.device is not None:
-            response = self.to_chat(self.device.transceive(chat["body"]), json=False)
-            ChatSocketHandler.update_cache(response)
-            ChatSocketHandler.send_updates(response)
-    
-    def to_chat(self, msg, json=True):
-        chat = {"id": str(uuid.uuid4()), "body": tornado.escape.json_decode(msg)["body"] if json else msg}
-        chat["html"] = tornado.escape.to_basestring(
-            self.render_string("message.html", message=chat))
-        return chat
+    @staticmethod
+    def decode_message(json_string):
+        return tornado.escape.json_decode(json_string)["command"]
 
 
 def main(device=None):
-    tornado.options.parse_command_line()
     app = Application()
     app.listen(options.port)
     ChatSocketHandler.device = device
@@ -99,4 +96,5 @@ def main(device=None):
 
 
 if __name__ == "__main__":
+    tornado.options.parse_command_line()
     main()

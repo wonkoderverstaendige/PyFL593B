@@ -43,12 +43,13 @@ $(document).ready(function(){
         }
     });
     
+    updater.start();
 });
 
 function newMessage(form) {
     var message = form.formToDict();
     var stringified = JSON.stringify(message); //updater.socket.send()
-    alert(stringified);
+    updater.socket.send(stringified);
     $('#command').val("").select();
 }
 
@@ -60,6 +61,35 @@ jQuery.fn.formToDict = function() {
     }
     if (json.next) delete json.next;
     return json;
+};
+
+var updater = {
+    socket: null,
+
+    start: function() {
+        var url = "ws://" + location.host + "/chatsocket";
+        updater.socket = new WebSocket(url);
+        updater.socket.onmessage = function(event) {
+            updater.parseMessage(JSON.parse(event.data));
+        }
+    },
+
+    parseMessage: function(message) {
+        console.log(message);
+        Materialize.toast(message.response.data, 5000);
+        switch(message.response.op_code) {
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                break;
+            case 3:
+                break;
+            default:
+                break;
+        }
+    }
 };
 
 var toggleEnable = function (element) {

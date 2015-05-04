@@ -68,7 +68,7 @@ def decode_response(response):
     return response_string
 
 
-def unpack_string(string, has_end_code=False):
+def unpack_string(string):
     """Make string into a namedtuple for easier access"""
     try:
         command = string.upper()
@@ -76,7 +76,10 @@ def unpack_string(string, has_end_code=False):
         channel = CHANNEL_DICT[words.pop()]
         op_type = OP_TYPE_DICT[words.pop()]
         op_code = OP_CODE_DICT[words.pop()]
-        end_code = END_CODE_DICT_REV[words.pop()] if has_end_code else None
+        if len(words) and words[-1] in END_CODE_DICT_REV:
+            end_code = END_CODE_DICT_REV[words.pop()]
+        else:
+            end_code = None
         data = ' '.join(reversed(words))  # rest is data, which may contain spaces
         data = data.strip('\x00')
         return Packet(command=command, channel=channel, op_type=op_type,

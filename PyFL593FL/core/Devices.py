@@ -151,6 +151,7 @@ class USB(Device):
             raise error
         self.log.log(LOG_LVL_VERBOSE, "Response: {}, encoded: {}".format(util.decode_response(response), response))
         
+        # FIXME: Should have only one return type!
         if unpack:
             return util.unpack_string(util.decode_response(response))
         else:

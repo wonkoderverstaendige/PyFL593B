@@ -11,7 +11,6 @@ import tornado.websocket
 import json
 import os.path
 import uuid
-from collections import namedtuple
 
 from tornado.options import define, options
 

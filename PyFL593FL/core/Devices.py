@@ -42,7 +42,7 @@ class Device(object):
         """Open connection to device."""
         self.device = None
 
-    def transceive(self, command):
+    def transceive(self, command, unpack=False):
         """This method was aptly named by Tim Schroeder, and is generously provided for with cookies by the same.
 
         For more information on the adopt-a-method program, please contact the author.
@@ -129,7 +129,7 @@ class USB(Device):
         self.log.error("Shouldn't be called by anyone!")
         raise NotImplementedError
 
-    def transceive(self, command):
+    def transceive(self, command, unpack=False):
         """Send a command string and receive response."""
         # Write coded command
         encoded_command = util.encode_command(command)
@@ -150,8 +150,11 @@ class USB(Device):
             self.log.error("No response: {:s}".format(error))
             raise error
         self.log.log(LOG_LVL_VERBOSE, "Response: {}, encoded: {}".format(util.decode_response(response), response))
-
-        return util.decode_response(response)
+        
+        if unpack:
+            return util.unpack_string(util.decode_response(response))
+        else:
+            return util.decode_response(response)
 
     def close(self):
         if self.device is not None:
@@ -167,8 +170,11 @@ class Dummy(Device):
     def __init__(self):
         super(Dummy, self).__init__()
 
-    def transceive(self, command):
-        return util.fake_data(command)
+    def transceive(self, command, unpack=False):
+        if unpack:
+            return util.unpack_string(util.fake_data(command))
+        else:
+            return util.fake_data(command)
 
 
 class Socket(Device):

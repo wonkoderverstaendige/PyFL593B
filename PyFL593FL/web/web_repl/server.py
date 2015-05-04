@@ -8,8 +8,10 @@ import tornado.ioloop
 import tornado.options
 import tornado.web
 import tornado.websocket
+import json
 import os.path
 import uuid
+from collections import namedtuple
 
 from tornado.options import define, options
 
@@ -71,19 +73,21 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
                 logging.error("Error sending message", exc_info=True)
 
     def on_message(self, message):
-        logging.info("Got message {}".format(message))
+        logging.debug("Got message {}".format(message))
+        assert self.device is not None
 
-        chat = self.to_chat(message)
-        ChatSocketHandler.update_cache(chat)
-        ChatSocketHandler.send_updates(chat)
+        packet = self.device.transceive(self.decode_message(message), unpack=True)
+        logging.debug("Got {}".format(repr(packet)))
+        response = self.to_chat(json.dumps({"response": packet._asdict()}))
+        ChatSocketHandler.update_cache(response)
+        ChatSocketHandler.send_updates(response)
 
-        if self.device is not None:
-            response = self.to_chat(self.device.transceive(chat["body"]), json=False)
-            ChatSocketHandler.update_cache(response)
-            ChatSocketHandler.send_updates(response)
+    @classmethod
+    def decode_message(self, json_string):
+        return tornado.escape.json_decode(json_string)["body"]
     
-    def to_chat(self, msg, json=True):
-        chat = {"id": str(uuid.uuid4()), "body": tornado.escape.json_decode(msg)["body"] if json else msg}
+    def to_chat(self, message):
+        chat = {"id": str(uuid.uuid4()), "body": message}
         chat["html"] = tornado.escape.to_basestring(
             self.render_string("message.html", message=chat))
         return chat

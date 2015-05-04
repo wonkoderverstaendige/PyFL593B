@@ -22,6 +22,7 @@ from collections import namedtuple
 import random
 positionals = [CHANNEL_DICT, OP_TYPE_DICT, OP_CODE_DICT]
 
+Packet = namedtuple("packet", "command, channel, op_code, op_type, end_code, data, string")
 
 def encode_command(command):
     # TODO: Checking of proper command sequence?
@@ -70,17 +71,16 @@ def decode_response(response):
 def unpack_string(string, has_end_code=False):
     """Make string into a namedtuple for easier access"""
     try:
-        words = list(reversed(string.upper().split(" ")))
-        packet = namedtuple("packet", "channel, op_code, op_type, end_code, data, string")
-        packet.command = string.upper()
-        packet.channel = CHANNEL_DICT[words.pop()]
-        packet.op_type = OP_TYPE_DICT[words.pop()]
-        packet.op_code = OP_CODE_DICT[words.pop()]
-        packet.end_code = END_CODE_DICT_REV[words.pop()] if has_end_code else None
-        packet.data = ' '.join(reversed(words))  # rest is data, which may contain spaces
-        packet.data = packet.data.strip('\x00')
-        packet.string = string
-        return packet
+        command = string.upper()
+        words = list(reversed(command.split(" ")))
+        channel = CHANNEL_DICT[words.pop()]
+        op_type = OP_TYPE_DICT[words.pop()]
+        op_code = OP_CODE_DICT[words.pop()]
+        end_code = END_CODE_DICT_REV[words.pop()] if has_end_code else None
+        data = ' '.join(reversed(words))  # rest is data, which may contain spaces
+        data = data.strip('\x00')
+        return Packet(command=command, channel=channel, op_type=op_type,
+                      op_code=op_code, end_code=end_code, data=data, string=string)
     except IndexError:
         raise ValueError("Incomplete packet: {}".format(string))
 

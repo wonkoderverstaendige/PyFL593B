@@ -23,7 +23,7 @@ from constants import *
 from collections import namedtuple
 import random
 
-Packet = namedtuple("packet", "command, channel, op_code, op_type, end_code, data, string")
+Packet = namedtuple("packet", "channel, op_type, op_code, end_code, data, string")
 
 
 def unpack_string(string):
@@ -41,8 +41,8 @@ def unpack_string(string):
         else:
             end_code = None
         data = ' '.join(reversed(words))  # rest is data, which may contain spaces?
-        return Packet(command=command, channel=channel, op_type=op_type,
-                      op_code=op_code, end_code=end_code, data=data, string=string)
+        return Packet(channel=channel, op_type=op_type,  op_code=op_code,
+                      end_code=end_code, data=data, string=string)
     except IndexError:
         raise ValueError("Incomplete packet: {}".format(string))
 

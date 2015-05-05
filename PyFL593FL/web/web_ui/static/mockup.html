@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+
+    <title>MOCKUP -- PyFL593FL web interface -- MOCKUP</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="materialize/css/materialize.min.css">
+    <link rel="stylesheet" href="nouislider/css/jquery.nouislider.min.css">
+    <link rel="stylesheet" href="nouislider/css/jquery.nouislider.pips.min.css">
+    <link rel="stylesheet" href="style.css" type="text/css" media="screen,projection"/>
+  </head>
+
+  <body>
+    <nav class="blue lighten-1" role="navigation">
+      <div class="nav-wrapper container">
+        <a id="logo-container" href="#" class="brand-logo">PyFL593FL</a>
+        <ul class="right hide-on-small-and-down">
+          <li><a class="modal-trigger" href="#modal_device">Device</a></li>
+          <li><a class="modal-trigger" href="#modal_settings">Settings</a></li>
+          <li><a class="modal-trigger" href="#modal_about">About</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div id="modal_device" class="modal">
+      <div class="modal-content">
+        <h4>Device Information and Selection</h4>
+        <p>Display Model, Firmware, Server version, etc.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close btn-flat">Ok</a>
+      </div>
+    </div>
+
+    <div id="modal_settings" class="modal">
+      <div class="modal-content">
+        <h4>Configure Interface</h4>
+        <p>Not sure what to put here, but I think I'll need it at some point.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close btn-flat">Cancel</a>
+        <a href="#!" class="modal-action modal-close btn-flat">Ok</a>
+      </div>
+    </div>
+    
+    <div id="modal_about" class="modal">
+      <div class="modal-content">
+        <h4>MOCKUP PyFL593FL Laser diode control interface</h4>
+        <p>Placeholder text describing what this whole thing is about, plus disclaimers of damage, 
+        pronounciation of the damn name, etc.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close btn-flat">Ok</a>
+      </div>
+    </div>
+    
+    <div class="container">
+      <div class="row">
+        <div class="col s2">
+          <br><br><br>
+          <ul class="collection">
+            <li class="collection-item">
+              <a id="REN" class="btn-floating red enable_btn"><i class="large mdi-content-clear white-text"></i></a>
+              <span class="title">Remote</span>
+            </li>
+            <li class="collection-item">
+              <a id="LEN" class="btn-floating disabled green enable_btn"><i class="large mdi-action-done white-text"></i></a>
+              <span class="title">Local</span>
+            </li>
+            <li class="collection-item">
+              <a id="XEN" class="btn-floating disabled red enable_btn"><i class="large mdi-content-clear white-text"></i></a>
+              <span class="title">External</span>
+            </li>
+            <li class="collection-item">
+              <a id="OEN" class="btn-floating disabled green enable_btn"><i class="large mdi-action-done white-text"></i></a>
+              <span class="title">Output</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="col s8">
+          <div class="row">
+            <div class="col s12">
+              <br>
+              <ul class="tabs">
+                <li class="tab col s3"><a href="#tab_start">Start</a></li>
+                <li class="tab col s3"><a class="active" href="#tab_control">Control</a></li>
+                <li class="tab col s3"><a href="#tab_config">Config</a></li>
+                <li class="tab col s3"><a href="#tab_record">Record</a></li>
+              </ul>
+            </div>
+
+            <!-- Start Page -->
+            <div id="tab_start" class="col s12">
+              <div class="section no-pad-bot" id="index-banner">
+                <div class="container">
+                  <br><br>
+                  <h1 class="header center orange-text">MOCKUP PyFL593FL control center</h1>
+                  <div class="row center">
+                    <h5 class="header col s12 light">Plenty photons under your control</h5>
+                  </div>
+                  <div class="row center">
+                    <h5 class="header col s6 dark">Stuff is written here</h5>
+                    <h5 class="header col s6 dark">More stuff is written here!</h5>
+                  </div>
+                  <br><br>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Central Control -->
+            <div id="tab_control" class="col s12">
+              <div class="row">
+                <div class="col l6 m12">
+                  <div class="card-panel">
+                    <h5 class="center">Channel 1</h5>
+                    <div class="divider"></div>
+                    <div class="row">
+                      <div class="col s3 center"><h6>Set</h6></div>
+                      <div class="col s3 center"><h6>Limit</h6></div>
+                      <div class="col s3 center"><h6>I<sub>mon</sub></h6></div>
+                      <div class="col s3 center"><h6>P<sub>mon</sub></h6></div>
+                    </div>
+                    <div class="row">
+                      <form action="#">
+                        <div class="col s3">
+                          <div id="setpoint" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="limit" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="imon" class="slider prog"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="pmon" class="slider prog"></div>
+                        </div>
+                        </form>
+                    </div>
+                  </div>
+                </div>
+                <div class="col l6 m12">
+                  <div class="card-panel">
+                    <h5 class="center">Channel 2</h5>
+                    <div class="divider"></div>
+                    <div class="row">
+                      <div class="col s3 center"><h6>Set</h6></div>
+                      <div class="col s3 center"><h6>Limit</h6></div>
+                      <div class="col s3 center"><h6>I<sub>mon</sub></h6></div>
+                      <div class="col s3 center"><h6>P<sub>mon</sub></h6></div>
+                    </div>
+                    <div class="row">
+                      <form action="#">
+                        <div class="col s3">
+                          <div id="setpoint" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="limit" class="slider"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="imon" class="slider prog"></div>
+                        </div>
+                        <div class="col s3">
+                          <div id="pmon" class="slider prog"></div>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col s12">
+				    <form action="a/message/new" method="post" id="commandform">
+			        <div class="input-field col s12">
+			          <i class="mdi-communication-textsms prefix"></i>
+			          <input name="command" id="command" type="text" class="validate">
+			          <label for="command">Command</label>
+			        </div>
+				    </form>
+				    </div>
+				  </div>
+            </div>
+
+            <!-- Immediate configuration -->
+            <div id="tab_config" class="col s12">Hello World!</div>
+
+            <!-- Logging/recording -->
+            <div id="tab_record" class="col s12">Recording stuff</div>
+
+          </div>
+        </div>
+
+        <div class="col s2">
+          <br><br><br>
+          <div class="input-field">
+            <i class="mdi-editor-mode-edit prefix"></i>
+            <textarea id="icon_prefix" class="materialize-textarea"></textarea>
+            <label for="icon_prefix">Add Note</label>
+          </div>
+          <div class="card-panel">
+            <span class="right grey-text text-lighten-1">08:44:19</span>
+            <p>TODO: Research tides</p></div>
+          <div class="card-panel">
+            <span class="right grey-text text-lighten-1">08:29:12</span>
+            <p>Making a sandwich</p></div>
+          <div class="card-panel">
+            <span class="right grey-text text-lighten-1">08:24:58</span>
+            <p>Moon exploded. Whoops</p></div>
+          <div class="card-panel">
+            <span class="right grey-text text-lighten-1">08:24:33</span>
+            <p>Bouncing laser beam off the moon</p></div>
+        </div>
+      </div>
+    </div>        
+    
+    <footer class="page-footer red lighten-1">
+      <div class="container">
+        <div class="row">
+          <div class="col l6 s12">
+            <h5 class="white-text">Battaglia Lab</h5>
+            <p class="grey-text text-lighten-4">Powering brains, powered by brains.</h5>
+          </div>
+        </div>
+      </div>
+      <div class="footer-copyright">
+        <div class="container">
+          Made by <a class="red-text text-lighten-3" href="https://github.com/wonkoderverstaendige">Ronny Eichler</a>
+        </div>
+      </div>
+    </footer>
+
+    <script type="text/javascript" src="jquery/jquery.min.js"></script>
+    <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+    <script type="text/javascript" src="nouislider/js/jquery.nouislider.all.min.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+
+  </body>
+</html>
+

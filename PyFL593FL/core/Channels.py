@@ -21,7 +21,7 @@ class Channel(object):
     def read(self, op_code):
         """Read a value from field"""
         command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_READ], OP_CODE_DICT_REV[op_code]])
-        response = unpack_string(self.device.transceive(command), has_end_code=True)
+        response = unpack_string(self.device.transceive(command))
         if response.end_code != ERR_OK:
             raise ValueError("Reading failed with Error #{}".format(response.end_code))
         return response
@@ -29,7 +29,7 @@ class Channel(object):
     def write(self, op_code, data):
         """Write data to a field, handle response/error code"""
         command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_WRITE], OP_CODE_DICT_REV[op_code], str(data)])
-        response = unpack_string(self.device.transceive(command), has_end_code=True)
+        response = unpack_string(self.device.transceive(command))
         if response.end_code != ERR_OK:
             raise ValueError("Writing failed with Error #{}".format(response.end_code))
         return response
@@ -38,7 +38,7 @@ class Channel(object):
     def min(self, op_code):
         """Read max value of property"""
         command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_MIN], OP_CODE_DICT_REV[op_code]])
-        response = unpack_string(self.device.transceive(command), has_end_code=True)
+        response = unpack_string(self.device.transceive(command))
         if response.end_code != ERR_OK:
             raise ValueError("Min failed with Error #{}".format(response.end_code))
         return response
@@ -47,7 +47,7 @@ class Channel(object):
     def max(self, op_code):
         """Read min value of property"""
         command = " ".join([self.id, OP_TYPE_DICT_REV[TYPE_MAX], OP_CODE_DICT_REV[op_code]])
-        response = unpack_string(self.device.transceive(command), has_end_code=True)
+        response = unpack_string(self.device.transceive(command))
         if response.end_code != ERR_OK:
             raise ValueError("Max failed with Error #{}".format(response.end_code))
         return response
@@ -73,7 +73,7 @@ class StatusChannel(Channel):
                 self.set_remote_enable(START_REMOTE_ENABLE_STATE)
                 break
             except ValueError as error:
-                self.log.debug("Failed conversation attempt {0:d} w/ error: {}".format(n+1, error))
+                self.log.debug("Failed conversation attempt {} w/ error: {}".format(n+1, error))
         else:
             self.log.error("Status channel failed to transceive after {} retries.".format(MAX_CONN_RETRIES))
             raise BaseException("Failed to communicate with device!")

@@ -1,0 +1,25 @@
+.prog .noUi-handle {
+    display: none;
+}
+
+#setpoint, #limit, #imon, #pmon {
+    margin: 10px;
+    height: 250px;
+    display: inline-block
+}
+
+#imon .noUi-connect {
+    background: #27ae60;
+}
+
+#pmon .noUi-connect {
+    background: #2980b9;
+}
+
+#setpoint .noUi-connect {
+    background: #27ae60;
+}
+
+#limit .noUi-connect {
+    background: #27ae60;
+}

@@ -1,0 +1,28 @@
+<div class="col l6 m12 channel{{ channel }}">
+  <div class="card-panel">
+    <h5 class="center">Channel {{ channel }}</h5>
+    <div class="divider"></div>
+    <div class="row">
+      <div class="col s3 center"><h6>Set</h6></div>
+      <div class="col s3 center"><h6>Limit</h6></div>
+      <div class="col s3 center"><h6>I<sub>mon</sub></h6></div>
+      <div class="col s3 center"><h6>P<sub>mon</sub></h6></div>
+    </div>
+    <div class="row">
+      <form action="#">
+        <div class="col s3">
+          <div id="setpoint" class="slider channel{{ channel }}"></div>
+        </div>
+        <div class="col s3">
+          <div id="limit" class="slider channel{{ channel }}"></div>
+        </div>
+        <div class="col s3">
+          <div id="imon" class="slider prog"></div>
+        </div>
+        <div class="col s3">
+          <div id="pmon" class="slider prog"></div>
+        </div>
+        </form>
+    </div>
+  </div>
+</div>

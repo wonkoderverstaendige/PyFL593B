@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PyFL593FL web interface</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ static_url("materialize/css/materialize.min.css") }}">
+    <link rel="stylesheet" href="{{ static_url("nouislider/css/jquery.nouislider.min.css") }}">
+    <link rel="stylesheet" href="{{ static_url("nouislider/css/jquery.nouislider.pips.min.css") }}">
+    <link rel="stylesheet" href="{{ static_url("style.css") }}" type="text/css" media="screen,projection">
+  </head>
+
+  <body>
+    <!-- Top nav bar -->
+    {% include "nav_bar.html" %}
+
+    <!-- Modals -->
+    {% include "modals.html" %}
+
+    <!-- Main Container -->
+    {% include "main_container.html" %}
+
+    <!-- Footer -->
+    {% include "footer.html" %}
+    
+    <!-- Scripts -->
+    <script type="text/javascript" src="{{ static_url("jquery/jquery.min.js") }}"></script>
+    <script type="text/javascript" src="{{ static_url("materialize/js/materialize.min.js") }}"></script>
+    <script type="text/javascript" src="{{ static_url("nouislider/js/jquery.nouislider.all.min.js") }}"></script>
+    <script type="text/javascript" src="{{ static_url("main.js") }}"></script>
+  </body>
+</html>

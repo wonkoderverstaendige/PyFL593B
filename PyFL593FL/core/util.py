@@ -12,34 +12,52 @@
 # |----------|----------|----------|---------|---------|----------|-------------------------------------------------|
 # | Offset:  |   0  1   |   2  3   |  4  5   |  6  7   |   8  9   | 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 |
 
-# EXAMPLE
-# "STATUS READ MODULE"
+# Examples:
+# read model name: "STATUS READ MODULE"
+# set remote enable: "STATUS WRITE ENABLE 0", or disable: "STATUS WRITE ENABLE 0"
+# read current applied to diode 1: "LD1 READ IMON"
 
 import time
-from array import array
+import array
 from constants import *
 from collections import namedtuple
 import random
-positionals = [CHANNEL_DICT, OP_TYPE_DICT, OP_CODE_DICT]
+
+Packet = namedtuple("packet", "channel, op_type, op_code, end_code, data, string")
+
+
+def unpack_string(string):
+    """Unpack a command or response string into a namedtuple of the respective numeric values
+    for the command elements
+    """
+    try:
+        command = string.upper()
+        words = list(reversed(command.split(" ")))
+        channel = CHANNEL_DICT[words.pop()]
+        op_type = OP_TYPE_DICT[words.pop()]
+        op_code = OP_CODE_DICT[words.pop()]
+        if len(words) and words[-1] in END_CODE_DICT_REV:
+            end_code = END_CODE_DICT_REV[words.pop()]
+        else:
+            end_code = None
+        data = ' '.join(reversed(words))  # rest is data, which may contain spaces?
+        return Packet(channel=channel, op_type=op_type,  op_code=op_code,
+                      end_code=end_code, data=data.rstrip('\0'), string=string)
+    except IndexError:
+        raise ValueError("Incomplete packet: {}".format(string))
 
 
 def encode_command(command):
-    # TODO: Checking of proper command sequence?
-    command = command.upper()
-    try:
-        words = command.upper().split(' ')
-        assert len(words) >= 3  # at least Channel, OpType and OpCode, data is optional
-        code_list = [DEV_TYPE]
-        code_list.extend([positionals[pos][word] for pos, word in enumerate(words[0:3])])
-        if len(words) > 3:
-            code_list.extend(map(ord, " ".join(words[3:])))
-        if len(code_list) < EP_PACK_OUT:
-            code_list.extend([0x0] * (EP_PACK_OUT-len(code_list)))
-
-    except KeyError:
-        raise ValueError("Invalid command: '{}'".format(command))
-
-    encoded = array('B')
+    """Encodes a command in string form (e.g. "STATUS WRITE ENABLE 0") into a byte
+    array that can be transmitted to a USB device.
+    """
+    pkt = unpack_string(command)
+    code_list = [DEV_TYPE, pkt.channel, pkt.op_type, pkt.op_code]
+    # data
+    code_list.extend(map(ord, pkt.data))
+    if len(code_list) < EP_PACK_OUT:
+        code_list.extend([0x00] * (EP_PACK_OUT-len(code_list)))
+    encoded = array.array('B')
     encoded.fromlist(code_list)
     return encoded
 
@@ -47,9 +65,6 @@ def encode_command(command):
 def decode_command(command):
     print command
     raise NotImplementedError
-    # assert len(command)
-    # decoded = command.upper().split(' ')
-    # return decoded
 
 
 def encode_response(response):
@@ -58,6 +73,7 @@ def encode_response(response):
 
 
 def decode_response(response):
+    """Assemble a readable string from a byte array response from a USB device."""
     channel = CHANNEL_DICT_REV[response[1]]
     op_type = OP_TYPE_DICT_REV[response[2]]
     op_code = OP_CODE_DICT_REV[response[3]]
@@ -65,24 +81,6 @@ def decode_response(response):
     data = response[5:]
     response_string = ' '.join([channel, op_type, op_code, end_code, data.tostring().strip()])
     return response_string
-
-
-def unpack_string(string, has_end_code=False):
-    """Make string into a namedtuple for easier access"""
-    try:
-        words = list(reversed(string.upper().split(" ")))
-        packet = namedtuple("packet", "channel, op_code, op_type, end_code, data, string")
-        packet.command = string.upper()
-        packet.channel = CHANNEL_DICT[words.pop()]
-        packet.op_type = OP_TYPE_DICT[words.pop()]
-        packet.op_code = OP_CODE_DICT[words.pop()]
-        packet.end_code = END_CODE_DICT_REV[words.pop()] if has_end_code else None
-        packet.data = ' '.join(reversed(words))  # rest is data, which may contain spaces
-        packet.data = packet.data.strip('\x00')
-        packet.string = string
-        return packet
-    except IndexError:
-        raise ValueError("Incomplete packet: {}".format(string))
 
 
 def memoize_with_expiry(expiry_time=None, _cache=None, num_args=None):
@@ -123,6 +121,9 @@ def memoize_with_expiry(expiry_time=None, _cache=None, num_args=None):
 
 @memoize_with_expiry(expiry_time=1.0)
 def fake_data(command, chance_to_fail=None, end_code=ERR_OK):
+    """Given a command, returns fake data that can be used to test without an actual device.
+
+    Can be made to occasionally fail, either with a fixed error, or a random error code."""
     packet = unpack_string(command)
 
     channel = packet.channel
@@ -138,10 +139,10 @@ def fake_data(command, chance_to_fail=None, end_code=ERR_OK):
             CMD_MODEL: 'FL593-Dummy',
             CMD_FWVER: '42.0.0',
             CMD_CHANCT: '2',
-            CMD_IMON: "{:.1f}".format(random.random()*120),
-            CMD_PMON: "{:.1f}".format(random.random()*120),
-            CMD_LIMIT: "{:.1f}".format(random.random()*120),
-            CMD_SETPOINT: "{:.1f}".format(random.random()*120),
+            CMD_IMON: "{:.1f}".format(random.random()*250),
+            CMD_PMON: "{:.1f}".format(random.random()*250),
+            CMD_LIMIT: "{:.1f}".format(random.random()*250),
+            CMD_SETPOINT: "{:.1f}".format(random.random()*250),
             CMD_MODE: '1',
             CMD_ALARM: "".join([chr(random.choice([FLAG_OFF, FLAG_ON])) for _ in range(8)])
         }
@@ -157,7 +158,7 @@ def fake_data(command, chance_to_fail=None, end_code=ERR_OK):
 
 
 if __name__ == "__main__":
-    # FIXME: Move into tests
+    # TODO: Move into tests
     cmd = "STATUS READ MODEL"
     encoded_cmd = encode_command(cmd)
     print cmd, ':'

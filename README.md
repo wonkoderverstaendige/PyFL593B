@@ -40,6 +40,7 @@ To install the driver, use [Zadig](http://zadig.akeo.ie/) and install a libusb-w
 
 ## Linux
 
+Use the resources/42-fl593fl-eval-board.rules udev file for access without super user rights.
 
 ### Libusb
 Installing on distributions using apt goes something along the lines of:

@@ -42,7 +42,7 @@ def unpack_string(string):
             end_code = None
         data = ' '.join(reversed(words))  # rest is data, which may contain spaces?
         return Packet(channel=channel, op_type=op_type,  op_code=op_code,
-                      end_code=end_code, data=data, string=string)
+                      end_code=end_code, data=data.rstrip('0x00'), string=string)
     except IndexError:
         raise ValueError("Incomplete packet: {}".format(string))
 
@@ -139,10 +139,10 @@ def fake_data(command, chance_to_fail=None, end_code=ERR_OK):
             CMD_MODEL: 'FL593-Dummy',
             CMD_FWVER: '42.0.0',
             CMD_CHANCT: '2',
-            CMD_IMON: "{:.1f}".format(random.random()*120),
-            CMD_PMON: "{:.1f}".format(random.random()*120),
-            CMD_LIMIT: "{:.1f}".format(random.random()*120),
-            CMD_SETPOINT: "{:.1f}".format(random.random()*120),
+            CMD_IMON: "{:.1f}".format(random.random()*250),
+            CMD_PMON: "{:.1f}".format(random.random()*250),
+            CMD_LIMIT: "{:.1f}".format(random.random()*250),
+            CMD_SETPOINT: "{:.1f}".format(random.random()*250),
             CMD_MODE: '1',
             CMD_ALARM: "".join([chr(random.choice([FLAG_OFF, FLAG_ON])) for _ in range(8)])
         }

@@ -73,7 +73,7 @@ class StatusChannel(Channel):
                 self.set_remote_enable(START_REMOTE_ENABLE_STATE)
                 break
             except ValueError as error:
-                self.log.debug("Failed conversation attempt {0:d} w/ error: {}".format(n+1, error))
+                self.log.debug("Failed conversation attempt {} w/ error: {}".format(n+1, error))
         else:
             self.log.error("Status channel failed to transceive after {} retries.".format(MAX_CONN_RETRIES))
             raise BaseException("Failed to communicate with device!")

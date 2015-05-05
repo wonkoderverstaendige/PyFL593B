@@ -22,7 +22,7 @@ if __name__ == '__main__':
     cli_args = parser.parse_args()
 
     logging.addLevelName(LOG_LVL_VERBOSE, "VERBOSE")
-    logging.basicConfig(level=LOG_LVL_VERBOSE if cli_args.verbose else logging.DEBUG,
+    logging.basicConfig(level=LOG_LVL_VERBOSE if cli_args.verbose else logging.INFO,
                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     log = logging.getLogger(__name__)
 

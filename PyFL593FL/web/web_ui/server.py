@@ -51,11 +51,11 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
         return {}
 
     def open(self):
-        logging.info("New waiter connected")
+        logging.info("New client connected")
         ChatSocketHandler.waiters.add(self)
 
     def on_close(self):
-        logging.info("Waiter closed connection")
+        logging.info("Client closed connection")
         ChatSocketHandler.waiters.remove(self)
 
     @classmethod
@@ -66,7 +66,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
 
     @classmethod
     def send_updates(cls, item):
-        logging.info("sending message to {} waiters".format(len(cls.waiters)))
+        logging.debug("sending message to {} clients".format(len(cls.waiters)))
         for waiter in cls.waiters:
             try:
                 waiter.write_message(item)
@@ -74,7 +74,7 @@ class ChatSocketHandler(tornado.websocket.WebSocketHandler):
                 logging.error("Error sending message", exc_info=True)
 
     def on_message(self, message):
-        logging.info("Got message {}".format(message))
+        logging.debug("Got message {}".format(message))
         assert self.device is not None
 
         packet = self.device.transceive(self.decode_message(message), unpack=True)

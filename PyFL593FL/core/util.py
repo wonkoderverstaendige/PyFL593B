@@ -42,7 +42,7 @@ def unpack_string(string):
             end_code = None
         data = ' '.join(reversed(words))  # rest is data, which may contain spaces?
         return Packet(channel=channel, op_type=op_type,  op_code=op_code,
-                      end_code=end_code, data=data.rstrip('0x00'), string=string)
+                      end_code=end_code, data=data.rstrip('\0'), string=string)
     except IndexError:
         raise ValueError("Incomplete packet: {}".format(string))
 

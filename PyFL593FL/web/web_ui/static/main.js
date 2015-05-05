@@ -50,7 +50,6 @@ $(document).ready(function(){
 function newMessage(form) {
     var message = form.formToDict();
     var stringified = JSON.stringify(message);
-    console.log(stringified)
     socket_updater.socket.send(stringified);
     $('#command').val("").select();
 }
@@ -78,6 +77,10 @@ var socket_updater= {
 
     parseMessage: function(message) {
         var response = message.response;
+        if (response.end_code) {
+            console.log(response);
+            Materialize.toast("ERROR: " + response.string, 3000);
+        }
         // Check op_type
         // If write, just check the end_code. If not 0, throw a toast warning
         // If read, update the corresponding element. Not elegant, but straight forward.
@@ -138,8 +141,8 @@ var socket_updater= {
 };
 
 function updateSlider(slider, value) {
-    console.log($(slider).val())
-    console.log(value)
+//    console.log($(slider).val())
+//    console.log(value)
     if (parseFloat($(slider).val()) != value) {
         $(slider).val(value);
     }
@@ -155,8 +158,8 @@ function onTimerTick() {
     for (var ch = 1; ch <= 2; ch++) {
         for (var idx = 0; idx < ld.length; idx++) {
             socket_updater.socket.send('{"command": "LD'+ch+' read '+ld[idx]+'"}');
-            }
         }
+    }
 
 };
 

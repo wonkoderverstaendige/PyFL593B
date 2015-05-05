@@ -24,7 +24,14 @@ $(document).ready(function(){
 
     $('.slider').on({
         slide: function() {
-            console.log($(this).id);
+            var id = $(this).attr('id');
+            var ch = $(this).hasClass("channelLD1") ? "LD1" : "LD2";
+            var value = parseFloat($(this).val())/1000.0;
+            socket_updater.send('{"command": "'+ch+' write '+id+' '+value.toFixed(3)+'"}');
+            $(this).addClass('user-active');
+            setTimeout(function() {
+                $(this).removeClass('user-active');
+            }, 100);
         }
     });
 
@@ -89,7 +96,7 @@ var socket_updater= {
         };
 
         socket_updater.socket.onopen = function() {
-            socket_updater.iv = setInterval(onTimerTick, 100); // 10Hz update rate ought to be enough for starters
+            socket_updater.iv = setInterval(onTimerTick, 50); // 20Hz update rate ought to be enough for starters
             console.log(socket_updater.socket);
             Materialize.toast("Connection established", 3000);
             socket_updater.toggleConnectionState(true);
@@ -188,6 +195,7 @@ var socket_updater= {
 };
 
 function updateSlider(slider, value) {
+    if ($(slider).hasClass("user-active")) return;
     if (parseFloat($(slider).val()) != value) {
         $(slider).val(value);
     }

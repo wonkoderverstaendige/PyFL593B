@@ -5,7 +5,8 @@ $(document).ready(function(){
     $('.modal-trigger').leanModal();
     
     $('#REN').click(function () {
-		toggleEnable(this);
+        var new_status = $('#REN').hasClass("green") ? 0 : 1;
+        socket_updater.send('{"command": "status write enable '+new_status+'"}');
     });
     
     $('.slider').noUiSlider({
@@ -20,7 +21,13 @@ $(document).ready(function(){
             'max': 250
         }
     });
-    
+
+    $('.slider').on({
+        slide: function() {
+            console.log($(this).id);
+        }
+    });
+
     $('.prog').noUiSlider({
         behaviour: 'none',
     }, true);
@@ -44,13 +51,12 @@ $(document).ready(function(){
     });
     
     socket_updater.start();
-    setInterval(onTimerTick, 1000); // 20Hz update rate ought to be enough for starters
 });
 
 function newMessage(form) {
     var message = form.formToDict();
     var stringified = JSON.stringify(message);
-    socket_updater.socket.send(stringified);
+    socket_updater.send(stringified);
     $('#command').val("").select();
 }
 
@@ -66,23 +72,45 @@ jQuery.fn.formToDict = function() {
 
 var socket_updater= {
     socket: null,
+    alarms: ["#OUT", "#XEN", "#LEN", "#REN"],
+    url: "ws://" + location.host + "/chatsocket",
+    iv: null,
 
     start: function() {
-        var url = "ws://" + location.host + "/chatsocket";
-        socket_updater.socket = new WebSocket(url);
+        socket_updater.socket = new WebSocket(this.url);
+
+        socket_updater.socket.onclose = function() {
+        window.clearInterval(socket_updater.iv)
+            Materialize.toast("Connection failed", 3000);
+            socket_updater.toggleConnectionState(false);
+            setTimeout(function() {
+                socket_updater.start();
+            }, 1000);
+        };
+
+        socket_updater.socket.onopen = function() {
+            socket_updater.iv = setInterval(onTimerTick, 100); // 10Hz update rate ought to be enough for starters
+            console.log(socket_updater.socket);
+            Materialize.toast("Connection established", 3000);
+            socket_updater.toggleConnectionState(true);
+        };
+
         socket_updater.socket.onmessage = function(event) {
             socket_updater.parseMessage(JSON.parse(event.data));
-        }
+        };
+
     },
 
     parseMessage: function(message) {
         var response = message.response;
         if (response.end_code) {
             console.log(response);
-            Materialize.toast("ERROR: " + response.string, 3000);
+            Materialize.toast("ERROR: " + response.end_code, 3000);
         }
         // Check op_type
-        // If write, just check the end_code. If not 0, throw a toast warning
+        // If write, do nothing and wait for update
+        if (response.op_type == 0x02) return;
+
         // If read, update the corresponding element. Not elegant, but straight forward.
         switch(response.op_code) {
             case 0x00: // Model -> Device
@@ -106,27 +134,26 @@ var socket_updater= {
             case 0x0F: // revert -> UNUSED
                 break;
             case 0x10: // alarms -> Buttons side panel
-                var alarms = ["#OUT", "#XEN", "#LEN", "#REN"];
                 flags = response.data.trim();
-                for (var idx=0; idx < alarms.length; idx++) {
-                    toggleBtn(alarms[idx], response.data[idx] == "1");
+                for (var idx=0; idx < socket_updater.alarms.length; idx++) {
+                    toggleBtn(socket_updater.alarms[idx], response.data[idx] == "1");
                 }
                 break;
             case 0x11: // setpoint -> LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #setpoint", parseFloat(response.data));
+                updateSlider(".channelLD"+response.channel+" #setpoint", parseFloat(response.data)*1000);
                 break;
             case 0x12: // limit -> LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #limit", parseFloat(response.data));
+                updateSlider(".channelLD"+response.channel+" #limit", parseFloat(response.data)*1000);
                 break;
             case 0x13: // mode -> LD1/LD2, CC or CP
                 break;
             case 0x14: // track -> main control tab channel count, LD1 slider range
                 break;
             case 0x15: // imon, LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #imon", parseFloat(response.data));
+                updateSlider(".channelLD"+response.channel+" #imon", parseFloat(response.data)*1000);
                 break;
             case 0x16: // pmon, LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #pmon", parseFloat(response.data));
+                updateSlider(".channelLD"+response.channel+" #pmon", parseFloat(response.data)*1000);
                 break;
             case 0x17: // enable, LD1/LD2
                 break;
@@ -135,14 +162,32 @@ var socket_updater= {
             case 0xE2: // iscale -> UNUSED
                 break;
             default:
-                Materialize.toast("Unknown op_code", 1000);
+                Materialize.toast("Unknown op_code: "+response.op_code, 3000);
+        }
+    },
+
+    send: function(msg) {
+        if (socket_updater.socket.readyState) socket_updater.socket.send(msg);
+    },
+
+    toggleConnectionState: function (state) {
+        // if the socket is not alive, disable all the things!
+        if (state) {
+            $("#REN").removeClass("disabled");
+            for (var idx=0; idx < this.alarms.length; idx++) {
+                $(socket_updater.alarms[idx]).removeClass("grey");
+            }
+
+        } else {
+            $("#REN").addClass("disabled");
+            for (var idx=0; idx < socket_updater.alarms.length; idx++) {
+                $(socket_updater.alarms[idx]).addClass("grey");
+            }
         }
     }
 };
 
 function updateSlider(slider, value) {
-//    console.log($(slider).val())
-//    console.log(value)
     if (parseFloat($(slider).val()) != value) {
         $(slider).val(value);
     }
@@ -152,12 +197,12 @@ function onTimerTick() {
     var status = ["alarm"];
     var ld = ["setpoint", "limit", "imon", "pmon"];
     for (var idx = 0; idx < status.length; idx++) {
-        socket_updater.socket.send('{"command": "status read '+status[idx]+'"}');
+        socket_updater.send('{"command": "status read '+status[idx]+'"}');
         }
 
     for (var ch = 1; ch <= 2; ch++) {
         for (var idx = 0; idx < ld.length; idx++) {
-            socket_updater.socket.send('{"command": "LD'+ch+' read '+ld[idx]+'"}');
+            socket_updater.send('{"command": "LD'+ch+' read '+ld[idx]+'"}');
         }
     }
 

@@ -19,15 +19,27 @@ $(document).ready(function(){
         range: {
             'min': 0,
             'max': 250
-        }
+        },
+        format: wNumb({
+            decimals: 1,
+            postfix: 'mA'
+        })
     });
+
+//    $("#slider-format").Link('lower').to($('#input-format'));
 
     $('.slider').on({
         slide: function() {
-            var id = $(this).attr('id');
+            if ($(this).hasClass("setpoint")) {
+               op_type = "setpoint";
+            } else if ($(this).hasClass("limit")){
+               op_type = "limit";
+            } else {
+                Materialize.toast("Unknown slider type", 3000);
+            }
             var ch = $(this).hasClass("channelLD1") ? "LD1" : "LD2";
             var value = parseFloat($(this).val())/1000.0;
-            socket_updater.send('{"command": "'+ch+' write '+id+' '+value.toFixed(3)+'"}');
+            socket_updater.send('{"command": "'+ch+' write '+op_type+' '+value.toFixed(3)+'"}');
             $(this).addClass('user-active');
             setTimeout(function() {
                 $(this).removeClass('user-active');
@@ -58,6 +70,24 @@ $(document).ready(function(){
     });
     
     socket_updater.start();
+
+    var channels = ['LD1', 'LD2'];
+    var spinner = ['setpoint', 'limit'];
+    var labels = ['imon', 'pmon'];
+    for (chidx=0; chidx < channels.length; chidx++) {
+        var channel = $(".channel"+channels[chidx]);
+        for (spinidx=0; spinidx < spinner.length; spinidx++) {
+            channel.find('.slider.'+spinner[spinidx]).Link('lower').to(channel.find(".spinner."+spinner[spinidx]), null, wNumb({
+                decimals: 0
+            }));
+        }
+        for (lblidx=0; lblidx < labels.length; lblidx++) {
+            channel.find('.prog.'+labels[lblidx]).Link('lower').to(channel.find(".label."+labels[lblidx]), null, wNumb({
+                decimals: 1,
+                postfix: " mA"
+            }));
+        }
+    }
 });
 
 function newMessage(form) {
@@ -77,7 +107,7 @@ jQuery.fn.formToDict = function() {
     return json;
 };
 
-var socket_updater= {
+var socket_updater = {
     socket: null,
     alarms: ["#OUT", "#XEN", "#LEN", "#REN"],
     url: "ws://" + location.host + "/chatsocket",
@@ -97,13 +127,17 @@ var socket_updater= {
 
         socket_updater.socket.onopen = function() {
             socket_updater.iv = setInterval(onTimerTick, 50); // 20Hz update rate ought to be enough for starters
-            console.log(socket_updater.socket);
+            //console.log(socket_updater.socket);
             Materialize.toast("Connection established", 3000);
             socket_updater.toggleConnectionState(true);
         };
 
         socket_updater.socket.onmessage = function(event) {
             socket_updater.parseMessage(JSON.parse(event.data));
+        };
+
+        socket_updater.socket.onerror = function(e) {
+            console.log(e);
         };
 
     },
@@ -147,20 +181,20 @@ var socket_updater= {
                 }
                 break;
             case 0x11: // setpoint -> LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #setpoint", parseFloat(response.data)*1000);
+                updateSlider($(".channelLD"+response.channel).find('.slider.setpoint'), parseFloat(response.data)*1000);
                 break;
             case 0x12: // limit -> LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #limit", parseFloat(response.data)*1000);
+                updateSlider($(".channelLD"+response.channel).find('.slider.limit'), parseFloat(response.data)*1000);
                 break;
             case 0x13: // mode -> LD1/LD2, CC or CP
                 break;
             case 0x14: // track -> main control tab channel count, LD1 slider range
                 break;
             case 0x15: // imon, LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #imon", parseFloat(response.data)*1000);
+                updateSlider($(".channelLD"+response.channel).find('.slider.imon'), parseFloat(response.data)*1000);
                 break;
             case 0x16: // pmon, LD1/LD2
-                updateSlider(".channelLD"+response.channel+" #pmon", parseFloat(response.data)*1000);
+                updateSlider($(".channelLD"+response.channel).find('.slider.pmon'), parseFloat(response.data)*1000);
                 break;
             case 0x17: // enable, LD1/LD2
                 break;
@@ -195,9 +229,9 @@ var socket_updater= {
 };
 
 function updateSlider(slider, value) {
-    if ($(slider).hasClass("user-active")) return;
-    if (parseFloat($(slider).val()) != value) {
-        $(slider).val(value);
+    if (slider.hasClass("user-active")) return;
+    if (parseFloat(slider.val()) != value) {
+        slider.val(value);
     }
 };
 

@@ -3,8 +3,7 @@
 }
 
 .slider.setpoint, .slider.limit, .slider.imon, .slider.pmon {
-    margin: 10px;
-    height: 250px;
+    height: 300px;
     display: inline-block
 }
 
